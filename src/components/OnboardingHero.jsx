@@ -5,18 +5,18 @@ export function OnboardingHero({ lang, setLang, t, onGetStarted }) {
   const isEn = lang === 'en';
 
   return (
-    <div className="w-full h-full max-h-[100dvh] bg-[#FEF3EF] flex flex-col justify-between overflow-hidden select-none">
-      {/* Top Section: Anchored at the top, perfectly matching reference Image 2 */}
-      <div className="flex-1 min-h-0 w-full flex items-start justify-center bg-[#FEF3EF] overflow-hidden">
+    <div className="w-full min-h-screen sm:h-screen sm:max-h-[100dvh] bg-[#FEF3EF] flex flex-col justify-between select-none overflow-y-auto sm:overflow-hidden">
+      {/* Top Section: Flexible characters illustration, never cut out on any screen size */}
+      <div className="flex-1 min-h-0 w-full flex items-end justify-center bg-[#FEF3EF] overflow-hidden px-2 pt-1 pb-0">
         <img
           src="/hero-illustration.jpg"
           alt="HaloPesa"
-          className="w-full h-full max-w-[460px] object-cover sm:object-contain object-top pointer-events-none select-none block"
+          className="w-full max-w-[460px] h-auto max-h-[58vh] sm:max-h-[62vh] object-contain pointer-events-none select-none block mx-auto"
         />
       </div>
 
-      {/* Bottom Section: White Card anchored cleanly at bottom */}
-      <div className="w-full shrink-0 bg-white px-5 sm:px-6 pt-3.5 pb-4 sm:pb-6 flex flex-col gap-2.5 sm:gap-3.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-10">
+      {/* Bottom Section: Always complete and fully visible */}
+      <div className="w-full shrink-0 bg-white px-5 sm:px-6 pt-4 pb-5 sm:pb-6 flex flex-col gap-2.5 sm:gap-3.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-10">
         {/* Title & Subtitle */}
         <div className="space-y-1 text-left">
           <h1 className="text-[17px] sm:text-[20px] font-bold text-stone-900 leading-tight tracking-tight">
