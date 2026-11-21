@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from './translations';
 import { OnboardingHero } from './components/OnboardingHero';
+import { PhoneAuthScreen } from './components/PhoneAuthScreen';
 import { Dashboard } from './components/Dashboard';
 import { SendMoneyModal } from './components/SendMoneyModal';
 import { WithdrawModal } from './components/WithdrawModal';
@@ -14,7 +15,10 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [lang, setLang] = useState('en'); // 'en' | 'sw'
-  const [hasStarted, setHasStarted] = useState(false);
+  // Navigation screen: 'onboarding' | 'auth' | 'dashboard'
+  const [currentScreen, setCurrentScreen] = useState('onboarding');
+  const [userPhone, setUserPhone] = useState('');
+  const [userName, setUserName] = useState('');
 
   // Simulated Account State
   const [balance, setBalance] = useState(485250); // 485,250 TZS initial
@@ -84,6 +88,13 @@ export default function App() {
       .catch(() => {});
   }, []);
 
+  // Handle phone submission from PhoneAuthScreen
+  const handlePhoneAuth = ({ phoneNumber, name }) => {
+    setUserPhone(phoneNumber);
+    if (name) setUserName(name);
+    setCurrentScreen('dashboard');
+  };
+
   // Callback when user performs any transaction
   const handleTransactionComplete = async (newTx) => {
     setBalance((prev) => prev + newTx.amount - (newTx.fee || 0));
@@ -103,26 +114,38 @@ export default function App() {
   return (
     <div className="min-h-screen sm:h-screen sm:max-h-[100dvh] w-full bg-[#FEF3EF] flex justify-center overflow-y-auto sm:overflow-hidden">
       <div className="w-full max-w-[460px] min-h-screen sm:h-full sm:max-h-[100dvh] bg-white sm:shadow-2xl flex flex-col justify-between relative overflow-hidden">
-        {!hasStarted ? (
-          /* Exact Match Onboarding Screen - Flexible on any screen size */
+        {/* Screen 1: Onboarding Hero */}
+        {currentScreen === 'onboarding' && (
           <OnboardingHero
             lang={lang}
             setLang={setLang}
             t={t}
-            onGetStarted={() => setHasStarted(true)}
+            onGetStarted={() => setCurrentScreen('auth')}
           />
-        ) : (
-          /* Interactive HaloPesa Services & Portal */
+        )}
+
+        {/* Screen 2: Phone Number Input (Matches User's Reference Screenshot) */}
+        {currentScreen === 'auth' && (
+          <PhoneAuthScreen
+            lang={lang}
+            t={t}
+            onBack={() => setCurrentScreen('onboarding')}
+            onContinue={handlePhoneAuth}
+          />
+        )}
+
+        {/* Screen 3: Interactive HaloPesa Services & Portal */}
+        {currentScreen === 'dashboard' && (
           <div className="flex-1 h-full flex flex-col bg-[#FAF7F2] overflow-hidden">
             {/* Top Navigation Bar in Dashboard */}
             <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs z-30">
               <button
                 type="button"
-                onClick={() => setHasStarted(false)}
+                onClick={() => setCurrentScreen('auth')}
                 className="flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>{lang === 'en' ? 'Back' : 'Rudi'}</span>
+                <span>{t.backButton || (lang === 'en' ? 'Back' : 'Rudi')}</span>
               </button>
 
               <HaloPesaLogo className="h-6" />
@@ -165,7 +188,7 @@ export default function App() {
                 onOpenBank={() => setBankOpen(true)}
                 onOpenAirtime={() => setAirtimeOpen(true)}
                 onOpenSavings={() => setSavingsOpen(true)}
-                onBackToHero={() => setHasStarted(false)}
+                onBackToHero={() => setCurrentScreen('onboarding')}
               />
             </div>
           </div>

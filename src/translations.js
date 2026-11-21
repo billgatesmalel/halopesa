@@ -21,6 +21,17 @@ export const translations = {
     getStarted: "Get Started",
     languageLabel: "Language",
 
+    // Phone Number Screen (From Screenshot media_1795249405612_2dcbb787.png)
+    phoneTitle: "Phone number",
+    phonePlaceholder: "Your phone number",
+    noAccountText: "Do not have HaloPesa account?",
+    registerLink: "Register",
+    termsPrefix: "By continuing, you agree with ",
+    termsLink: "Terms & Conditions",
+    termsSuffix: " of HaloPesa.",
+    continueButton: "Continue",
+    backButton: "Back",
+
     // Navigation & Tabs
     navHome: "Home",
     navServices: "Services",
@@ -139,6 +150,17 @@ export const translations = {
       "App ya HaloPesa inawapatia wateja wetu matumizi ya kipekee na rahisi, ikiwa na huduma mbalimbali kama kutuma pesa, kutoa pesa, kulipia bidhaa na huduma, kuweka akiba binafsi, na uhamisho kwenda benki.",
     getStarted: "Anza kutumia",
     languageLabel: "Lugha",
+
+    // Phone Number Screen (From Screenshot media_1795249409391_9926c7a7.png)
+    phoneTitle: "Namba ya simu",
+    phonePlaceholder: "Namba yako ya simu",
+    noAccountText: "Huna akaunti ya Halopesa?",
+    registerLink: "Jisajili",
+    termsPrefix: "Kwa kuendelea unakubaliana na ",
+    termsLink: "Vigezo na Masharti",
+    termsSuffix: " Ya HaloPesa.",
+    continueButton: "Endelea",
+    backButton: "Rudi",
 
     // Navigation & Tabs
     navHome: "Mwanzo",
