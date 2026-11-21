@@ -20,11 +20,11 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
   };
 
   return (
-    <div className="w-full h-full h-[100dvh] max-h-[100dvh] bg-white flex flex-col justify-between px-6 pt-4 pb-5 select-none overflow-hidden">
+    <div className="w-full min-h-screen bg-white flex flex-col justify-between px-6 pt-5 pb-6 select-none">
       {/* Top Section */}
-      <div className="w-full flex-1 min-h-0 flex flex-col">
+      <div className="w-full flex-1 flex flex-col">
         {/* Back navigation button */}
-        <div className="mb-2">
+        <div className="mb-3">
           <button
             type="button"
             onClick={onBack}
@@ -35,13 +35,13 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
         </div>
 
         {/* Title */}
-        <h1 className="text-[20px] sm:text-[22px] font-bold text-stone-900 tracking-tight mb-3">
+        <h1 className="text-[20px] sm:text-[22px] font-bold text-stone-900 tracking-tight mb-4">
           {isRegistering
             ? (lang === 'en' ? 'Register New Account' : 'Sajili Akaunti Mpya')
             : t.phoneTitle}
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-2.5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* If user clicked Register, ask for their name */}
           {isRegistering && (
             <div>
@@ -97,8 +97,8 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
         </form>
       </div>
 
-      {/* Bottom Section: Always 100% visible on screen without scrolling */}
-      <div className="w-full shrink-0 flex flex-col gap-2.5 pt-2 pb-1">
+      {/* Bottom Section */}
+      <div className="w-full shrink-0 flex flex-col gap-3 pt-4">
         {/* Legal Disclaimer */}
         <p className="text-[11.5px] sm:text-[12px] text-stone-500 leading-snug text-left">
           {t.termsPrefix}
