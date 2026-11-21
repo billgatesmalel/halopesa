@@ -101,10 +101,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FEF3EF] flex justify-center">
-      <div className="w-full max-w-[480px] min-h-screen bg-white sm:shadow-2xl flex flex-col justify-between relative">
+    <div className="h-screen h-[100dvh] max-h-[100dvh] w-full bg-[#FEF3EF] flex justify-center overflow-hidden">
+      <div className="w-full max-w-[460px] h-full max-h-[100dvh] bg-white sm:shadow-2xl flex flex-col justify-between relative overflow-hidden">
         {!hasStarted ? (
-          /* Exact Match Onboarding Screen - Full Screen Edge to Edge */
+          /* Exact Match Onboarding Screen - Fits 100% in viewport without scrolling */
           <OnboardingHero
             lang={lang}
             setLang={setLang}
@@ -113,9 +113,9 @@ export default function App() {
           />
         ) : (
           /* Interactive HaloPesa Services & Portal */
-          <div className="flex-1 flex flex-col bg-[#FAF7F2]">
+          <div className="flex-1 h-full flex flex-col bg-[#FAF7F2] overflow-hidden">
             {/* Top Navigation Bar in Dashboard */}
-            <div className="sticky top-0 z-30 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs">
+            <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs z-30">
               <button
                 type="button"
                 onClick={() => setHasStarted(false)}
