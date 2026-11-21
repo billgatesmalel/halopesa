@@ -20,28 +20,28 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
   };
 
   return (
-    <div className="w-full h-full min-h-screen sm:h-screen sm:max-h-[100dvh] bg-white flex flex-col justify-between px-6 pt-6 pb-6 select-none">
+    <div className="w-full h-full h-[100dvh] max-h-[100dvh] bg-white flex flex-col justify-between px-6 pt-4 pb-5 select-none overflow-hidden">
       {/* Top Section */}
-      <div className="w-full flex-1 flex flex-col">
+      <div className="w-full flex-1 min-h-0 flex flex-col">
         {/* Back navigation button */}
-        <div className="mb-4">
+        <div className="mb-2">
           <button
             type="button"
             onClick={onBack}
-            className="p-1 -ml-1 text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer flex items-center gap-1 text-xs font-semibold"
+            className="p-1 -ml-1 text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer flex items-center gap-1"
           >
             <ArrowLeft className="w-5 h-5 stroke-[2.2]" />
           </button>
         </div>
 
         {/* Title */}
-        <h1 className="text-[22px] sm:text-[24px] font-bold text-stone-900 tracking-tight mb-4">
+        <h1 className="text-[20px] sm:text-[22px] font-bold text-stone-900 tracking-tight mb-3">
           {isRegistering
             ? (lang === 'en' ? 'Register New Account' : 'Sajili Akaunti Mpya')
             : t.phoneTitle}
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           {/* If user clicked Register, ask for their name */}
           {isRegistering && (
             <div>
@@ -50,7 +50,7 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
                 value={registerName}
                 onChange={(e) => setRegisterName(e.target.value)}
                 placeholder={lang === 'en' ? 'Your full name' : 'Jina lako kamili'}
-                className="w-full h-13 px-4 rounded-xl border border-stone-200 text-stone-900 text-[15px] focus:outline-none focus:border-[#F05A22] transition-colors mb-2"
+                className="w-full h-12 px-4 rounded-xl border border-stone-200 text-stone-900 text-[14px] focus:outline-none focus:border-[#F05A22] transition-colors mb-2"
                 autoFocus
               />
             </div>
@@ -63,13 +63,13 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t.phonePlaceholder}
-              className="w-full h-13 px-4 rounded-xl border border-stone-200 text-stone-900 text-[15px] placeholder-stone-400 focus:outline-none focus:border-[#F05A22] transition-colors"
+              className="w-full h-12 px-4 rounded-xl border border-stone-200 text-stone-900 text-[14px] placeholder-stone-400 focus:outline-none focus:border-[#F05A22] transition-colors"
               autoFocus={!isRegistering}
             />
           </div>
 
           {/* Registration / Sign-in toggle link */}
-          <div className="text-[13px] text-stone-500 pt-1">
+          <div className="text-[12.5px] text-stone-500 pt-0.5">
             {!isRegistering ? (
               <span>
                 {t.noAccountText}{' '}
@@ -97,12 +97,12 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
         </form>
       </div>
 
-      {/* Bottom Section */}
-      <div className="w-full shrink-0 flex flex-col gap-3 pt-4">
+      {/* Bottom Section: Always 100% visible on screen without scrolling */}
+      <div className="w-full shrink-0 flex flex-col gap-2.5 pt-2 pb-1">
         {/* Legal Disclaimer */}
-        <p className="text-[12px] sm:text-[12.5px] text-stone-500 leading-relaxed text-left">
+        <p className="text-[11.5px] sm:text-[12px] text-stone-500 leading-snug text-left">
           {t.termsPrefix}
-          <span className="text-[#F05A22] cursor-pointer hover:underline">
+          <span className="text-[#F05A22] cursor-pointer hover:underline font-medium">
             {t.termsLink}
           </span>
           {t.termsSuffix}
@@ -113,7 +113,7 @@ export function PhoneAuthScreen({ lang, t, onBack, onContinue }) {
           type="button"
           onClick={handleSubmit}
           disabled={!isValid}
-          className={`w-full h-12 rounded-xl font-bold text-[15px] transition-all flex items-center justify-center ${
+          className={`w-full h-11 sm:h-12 rounded-xl font-bold text-sm sm:text-[15px] transition-all flex items-center justify-center ${
             isValid
               ? 'bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.99] text-white cursor-pointer shadow-md shadow-orange-500/20'
               : 'bg-[#E5E7EB] text-stone-400 cursor-not-allowed'

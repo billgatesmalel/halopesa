@@ -112,8 +112,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen sm:h-screen sm:max-h-[100dvh] w-full bg-[#FEF3EF] flex justify-center overflow-y-auto sm:overflow-hidden">
-      <div className="w-full max-w-[460px] min-h-screen sm:h-full sm:max-h-[100dvh] bg-white sm:shadow-2xl flex flex-col justify-between relative overflow-hidden">
+    <div className="h-screen h-[100dvh] max-h-[100dvh] w-full bg-[#FEF3EF] flex justify-center overflow-hidden">
+      <div className="w-full max-w-[460px] h-full max-h-[100dvh] bg-white sm:shadow-2xl flex flex-col justify-between relative overflow-hidden">
         {/* Screen 1: Onboarding Hero */}
         {currentScreen === 'onboarding' && (
           <OnboardingHero
