@@ -6,19 +6,19 @@ export function OnboardingHero({ lang, setLang, t, onGetStarted }) {
 
   return (
     <div className="w-full h-full max-h-[100dvh] bg-[#FEF3EF] flex flex-col justify-between overflow-hidden select-none">
-      {/* Top Section: dynamically fits within available space without overflowing */}
-      <div className="flex-1 min-h-0 w-full flex items-end justify-center bg-[#FEF3EF] overflow-hidden px-3 pt-1">
+      {/* Top Section: Anchored at the top, perfectly matching reference Image 2 */}
+      <div className="flex-1 min-h-0 w-full flex items-start justify-center bg-[#FEF3EF] overflow-hidden">
         <img
           src="/hero-illustration.jpg"
           alt="HaloPesa"
-          className="h-full w-auto max-w-full max-h-full object-contain object-bottom pointer-events-none select-none block"
+          className="w-full h-full max-w-[460px] object-cover sm:object-contain object-top pointer-events-none select-none block"
         />
       </div>
 
-      {/* Bottom Section: Always 100% visible on screen without scrolling */}
-      <div className="w-full shrink-0 bg-white px-5 sm:px-6 pt-3.5 pb-5 sm:pb-6 flex flex-col gap-2.5 sm:gap-3.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+      {/* Bottom Section: White Card anchored cleanly at bottom */}
+      <div className="w-full shrink-0 bg-white px-5 sm:px-6 pt-3.5 pb-4 sm:pb-6 flex flex-col gap-2.5 sm:gap-3.5 shadow-[0_-4px_20px_rgba(0,0,0,0.04)] z-10">
         {/* Title & Subtitle */}
-        <div className="space-y-1 sm:space-y-1.5 text-left">
+        <div className="space-y-1 text-left">
           <h1 className="text-[17px] sm:text-[20px] font-bold text-stone-900 leading-tight tracking-tight">
             {t.heroTitle}
           </h1>
