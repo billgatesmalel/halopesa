@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { HaloPesaLogo } from '../BrandLogo';
-import { Wallet, ArrowRight, Menu, X } from 'lucide-react';
+import { Wallet, ArrowRight, Menu, X, FileSearch } from 'lucide-react';
 
-export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScrollToSection }) {
+export function BiasharaNavbar({
+  activePage = 'home',
+  onNavigatePage,
+  onNavigateToApply,
+  onNavigateToHaloPesa
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { label: 'Home / Nyumbani', id: 'hero' },
-    { label: 'How It Works / Jinsi Inavyofanya Kazi', id: 'how-it-works' },
+    { label: 'Home / Nyumbani', id: 'home' },
+    { label: 'How It Works / Hatua', id: 'how-it-works' },
     { label: 'Calculator / Kikokotoo', id: 'calculator' },
-    { label: 'Why Choose Us / Faida', id: 'features' },
-    { label: 'FAQs / Maswali', id: 'faqs' }
+    { label: 'Sectors / Sekta', id: 'sectors' },
+    { label: 'Track Loan / Fuatilia', id: 'track' },
+    { label: 'FAQs / Maswali', id: 'faqs' },
+    { label: 'Support / Msaada', id: 'support' }
   ];
 
-  const handleNavClick = (id) => {
+  const handleNavClick = (pageId) => {
     setMobileMenuOpen(false);
-    if (onScrollToSection) {
-      onScrollToSection(id);
+    if (onNavigatePage) {
+      onNavigatePage(pageId);
     }
   };
 
@@ -24,8 +31,9 @@ export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScro
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18">
+          
           {/* Brand Logo & Name */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('hero')}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('home')}>
             <HaloPesaLogo className="h-8" />
             <div className="h-6 w-px bg-stone-300 hidden sm:block"></div>
             <div className="flex flex-col">
@@ -39,17 +47,24 @@ export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScro
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleNavClick(item.id)}
-                className="text-xs xl:text-sm font-semibold text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer py-1"
-              >
-                {item.label}
-              </button>
-            ))}
+          <nav className="hidden xl:flex items-center gap-1.5 lg:gap-2">
+            {navItems.map((item) => {
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNavClick(item.id)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-orange-50 text-[#F05A22] border border-orange-200 shadow-xs'
+                      : 'text-stone-700 hover:text-[#F05A22] hover:bg-stone-50'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Action Buttons */}
@@ -58,7 +73,11 @@ export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScro
             <button
               type="button"
               onClick={onNavigateToHaloPesa}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-all cursor-pointer"
+              className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border ${
+                activePage === 'dashboard'
+                  ? 'bg-stone-900 text-white border-stone-900 shadow-xs'
+                  : 'text-stone-700 bg-stone-100 hover:bg-stone-200 border-stone-200'
+              }`}
               title="Open HaloPesa App / Fungua Pochi ya HaloPesa"
             >
               <Wallet className="w-4 h-4 text-[#F05A22]" />
@@ -77,7 +96,7 @@ export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScro
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-2 xl:hidden">
             <button
               type="button"
               onClick={onNavigateToApply}
@@ -100,18 +119,26 @@ export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScro
 
       {/* Mobile Dropdown Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in slide-in-from-top duration-200">
-          <div className="flex flex-col space-y-2">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleNavClick(item.id)}
-                className="text-left px-3 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50 rounded-lg transition-colors cursor-pointer"
-              >
-                {item.label}
-              </button>
-            ))}
+        <div className="xl:hidden border-t border-stone-200 bg-white px-4 pt-3 pb-5 space-y-3 shadow-lg animate-in slide-in-from-top duration-200">
+          <div className="flex flex-col space-y-1">
+            {navItems.map((item) => {
+              const isActive = activePage === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNavClick(item.id)}
+                  className={`text-left px-3.5 py-2.5 text-sm font-bold rounded-xl transition-colors cursor-pointer flex items-center justify-between ${
+                    isActive
+                      ? 'bg-orange-50 text-[#F05A22] border border-orange-200'
+                      : 'text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && <span className="w-2 h-2 rounded-full bg-[#F05A22]"></span>}
+                </button>
+              );
+            })}
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">

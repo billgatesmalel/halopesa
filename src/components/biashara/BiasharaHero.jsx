@@ -1,7 +1,7 @@
 import React from 'react';
-import { ArrowRight, Calculator, CheckCircle2, Zap, Wallet } from 'lucide-react';
+import { ArrowRight, Calculator, CheckCircle2, Zap, Wallet, ArrowUpRight } from 'lucide-react';
 
-export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateToHaloPesa }) {
+export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHaloPesa }) {
   return (
     <section id="hero" className="relative overflow-hidden bg-gradient-to-b from-orange-50/70 via-white to-stone-50/50 pt-8 pb-16 lg:pt-14 lg:pb-24">
       {/* Decorative ambient background blur */}
@@ -49,7 +49,7 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
 
               <button
                 type="button"
-                onClick={() => onScrollToSection('calculator')}
+                onClick={() => onNavigatePage('calculator')}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-stone-800 text-sm sm:text-base bg-white hover:bg-stone-50 border border-stone-200 shadow-xs transition-all cursor-pointer"
               >
                 <Calculator className="w-4 h-4 text-[#F05A22]" />
@@ -93,7 +93,7 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
 
           {/* Right Hero Mosaic Grid */}
           <div className="lg:col-span-5 relative">
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 cursor-pointer" onClick={() => onNavigatePage('sectors')}>
               
               {/* Column 1 */}
               <div className="flex flex-col gap-3 sm:gap-4">
@@ -106,10 +106,11 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <span className="inline-block px-2.5 py-1 rounded-lg bg-white/95 text-stone-900 text-xs font-bold shadow-xs">
                       Retail Shops / Maduka
                     </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-white opacity-80" />
                   </div>
                 </div>
 
@@ -122,10 +123,11 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <span className="inline-block px-2.5 py-1 rounded-lg bg-white/95 text-stone-900 text-xs font-bold shadow-xs">
                       Wholesale / Jumla
                     </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-white opacity-80" />
                   </div>
                 </div>
               </div>
@@ -141,10 +143,11 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <span className="inline-block px-2.5 py-1 rounded-lg bg-white/95 text-stone-900 text-xs font-bold shadow-xs">
                       Agriculture / Kilimo
                     </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-white opacity-80" />
                   </div>
                 </div>
 
@@ -157,10 +160,11 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                  <div className="absolute bottom-3 left-3 right-3">
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                     <span className="inline-block px-2.5 py-1 rounded-lg bg-white/95 text-stone-900 text-xs font-bold shadow-xs">
                       Transport / Usafiri
                     </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-white opacity-80" />
                   </div>
                 </div>
               </div>

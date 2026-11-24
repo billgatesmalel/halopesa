@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from './translations';
+import { BiasharaNavbar } from './components/biashara/BiasharaNavbar';
+import { BiasharaFooter } from './components/biashara/BiasharaFooter';
 import { BiasharaHomePage } from './components/biashara/BiasharaHomePage';
+import { BiasharaHowItWorksPage } from './components/biashara/pages/BiasharaHowItWorksPage';
+import { BiasharaCalculatorPage } from './components/biashara/pages/BiasharaCalculatorPage';
+import { BiasharaSectorsPage } from './components/biashara/pages/BiasharaSectorsPage';
+import { BiasharaTrackPage } from './components/biashara/pages/BiasharaTrackPage';
+import { BiasharaFAQPage } from './components/biashara/pages/BiasharaFAQPage';
+import { BiasharaSupportPage } from './components/biashara/pages/BiasharaSupportPage';
 import { BiasharaLoanForm } from './components/biashara/BiasharaLoanForm';
 import { OnboardingHero } from './components/OnboardingHero';
 import { PhoneAuthScreen } from './components/PhoneAuthScreen';
@@ -18,13 +26,13 @@ import { ArrowLeft } from 'lucide-react';
 export default function App() {
   const [lang, setLang] = useState('en'); // 'en' | 'sw'
   
-  // Navigation screen:
-  // 'biashara-home': Modern Bidii-style homepage for Biashara Loans
-  // 'biashara-apply': Simple bilingual loan application form
-  // 'onboarding': HaloPesa onboarding screen
-  // 'auth': HaloPesa phone authentication
-  // 'dashboard': HaloPesa wallet dashboard ("where we had left the project")
-  const [currentScreen, setCurrentScreen] = useState('biashara-home');
+  // Dynamic page routing:
+  // 'home' | 'how-it-works' | 'calculator' | 'sectors' | 'track' | 'faqs' | 'support' | 'apply' | 'dashboard' | 'onboarding' | 'auth'
+  const [activePage, setActivePage] = useState(() => {
+    const hash = window.location.hash.replace('#', '');
+    const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'dashboard', 'onboarding', 'auth'];
+    return validPages.includes(hash) ? hash : 'home';
+  });
 
   const [userPhone, setUserPhone] = useState('0628 123 456');
   const [userName, setUserName] = useState('');
@@ -86,6 +94,25 @@ export default function App() {
 
   const t = translations[lang];
 
+  // Sync route with URL hash for browser back/forward and bookmarking
+  const navigateToPage = (pageName) => {
+    setActivePage(pageName);
+    window.location.hash = pageName;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'dashboard', 'onboarding', 'auth'];
+      if (validPages.includes(hash)) {
+        setActivePage(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Load balance and transactions from Neon DB API if available
   useEffect(() => {
     fetch('/api/balance')
@@ -111,7 +138,7 @@ export default function App() {
   const handlePhoneAuth = ({ phoneNumber, name }) => {
     setUserPhone(phoneNumber);
     if (name) setUserName(name);
-    setCurrentScreen('dashboard');
+    navigateToPage('dashboard');
   };
 
   // Callback when a Biashara loan is successfully approved and disbursed
@@ -137,7 +164,7 @@ export default function App() {
     if (loanData.phone) setUserPhone(loanData.phone);
 
     // Redirect to where we had left the project (Dashboard)
-    setCurrentScreen('dashboard');
+    navigateToPage('dashboard');
   };
 
   // Callback when user performs any transaction
@@ -151,177 +178,249 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTx),
       });
-    } catch (err) {
+    } catch {
       // Local state already updated
     }
   };
 
   // ═════════════════════════════════════════════════════════════════════════
-  // VIEW 1: MODERN BIASHARA LOANS HOMEPAGE (FULL-WIDTH MODERN CODES)
+  // VIEW 1: DEDICATED 4-STEP LOAN APPLICATION PAGE
   // ═════════════════════════════════════════════════════════════════════════
-  if (currentScreen === 'biashara-home') {
-    return (
-      <BiasharaHomePage
-        onNavigateToApply={() => setCurrentScreen('biashara-apply')}
-        onNavigateToHaloPesa={() => setCurrentScreen('dashboard')}
-        onApplyWithParams={(params) => {
-          setLoanApplyParams((prev) => ({ ...prev, ...params }));
-          setCurrentScreen('biashara-apply');
-        }}
-      />
-    );
-  }
-
-  // ═════════════════════════════════════════════════════════════════════════
-  // VIEW 2: BIASHARA LOAN APPLICATION FORM (BILINGUAL SWAHILI STROKES)
-  // ═════════════════════════════════════════════════════════════════════════
-  if (currentScreen === 'biashara-apply') {
+  if (activePage === 'apply') {
     return (
       <BiasharaLoanForm
         initialParams={loanApplyParams}
         userPhone={userPhone}
         userName={userName}
-        onBack={() => setCurrentScreen('biashara-home')}
+        onBack={() => navigateToPage('home')}
         onLoanSuccess={handleLoanSuccess}
       />
     );
   }
 
   // ═════════════════════════════════════════════════════════════════════════
-  // VIEW 3: HALOPESA APP PORTAL & DASHBOARD (WHERE WE HAD LEFT OFF)
+  // VIEW 2: HALOPESA APP PORTAL & DASHBOARD (WHERE WE HAD LEFT OFF)
   // ═════════════════════════════════════════════════════════════════════════
-  return (
-    <div className="min-h-screen w-full bg-[#FEF3EF] flex justify-center py-0 sm:py-6">
-      <div className="w-full max-w-[460px] min-h-screen sm:min-h-[92vh] bg-white sm:rounded-3xl sm:shadow-2xl flex flex-col justify-between relative overflow-hidden sm:border sm:border-stone-200">
-        
-        {/* Screen: Onboarding Hero */}
-        {currentScreen === 'onboarding' && (
-          <OnboardingHero
-            lang={lang}
-            setLang={setLang}
-            t={t}
-            onGetStarted={() => setCurrentScreen('auth')}
-          />
-        )}
+  if (activePage === 'dashboard' || activePage === 'onboarding' || activePage === 'auth') {
+    return (
+      <div className="min-h-screen w-full bg-[#FEF3EF] flex justify-center py-0 sm:py-6">
+        <div className="w-full max-w-[460px] min-h-screen sm:min-h-[92vh] bg-white sm:rounded-3xl sm:shadow-2xl flex flex-col justify-between relative overflow-hidden sm:border sm:border-stone-200">
+          
+          {/* Screen: Onboarding Hero */}
+          {activePage === 'onboarding' && (
+            <OnboardingHero
+              lang={lang}
+              setLang={setLang}
+              t={t}
+              onGetStarted={() => navigateToPage('auth')}
+            />
+          )}
 
-        {/* Screen: Phone Number Input */}
-        {currentScreen === 'auth' && (
-          <PhoneAuthScreen
-            lang={lang}
-            t={t}
-            onBack={() => setCurrentScreen('biashara-home')}
-            onContinue={handlePhoneAuth}
-          />
-        )}
+          {/* Screen: Phone Number Input */}
+          {activePage === 'auth' && (
+            <PhoneAuthScreen
+              lang={lang}
+              t={t}
+              onBack={() => navigateToPage('home')}
+              onContinue={handlePhoneAuth}
+            />
+          )}
 
-        {/* Screen: Interactive HaloPesa Services & Portal (Dashboard) */}
-        {currentScreen === 'dashboard' && (
-          <div className="flex-1 h-full flex flex-col bg-[#FAF7F2] overflow-hidden">
-            {/* Top Navigation Bar in Dashboard */}
-            <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs z-30">
-              {/* Back to Biashara Loans Homepage */}
-              <button
-                type="button"
-                onClick={() => setCurrentScreen('biashara-home')}
-                className="flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer"
-                title="Go to Biashara Loans / Rudi Tovuti ya Mikopo"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Biashara Loans</span>
-                <span className="sm:hidden">{lang === 'en' ? 'Loans' : 'Mikopo'}</span>
-              </button>
-
-              <HaloPesaLogo className="h-6" />
-
-              {/* Language Switcher */}
-              <div className="flex items-center bg-stone-100 p-0.5 rounded-lg text-xs font-bold">
+          {/* Screen: Interactive HaloPesa Services & Portal (Dashboard) */}
+          {activePage === 'dashboard' && (
+            <div className="flex-1 h-full flex flex-col bg-[#FAF7F2] overflow-hidden">
+              {/* Top Navigation Bar in Dashboard */}
+              <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs z-30">
+                {/* Back to Biashara Loans Homepage */}
                 <button
                   type="button"
-                  onClick={() => setLang('en')}
-                  className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
-                    lang === 'en' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500'
-                  }`}
+                  onClick={() => navigateToPage('home')}
+                  className="flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer"
+                  title="Go to Biashara Loans / Rudi Tovuti ya Mikopo"
                 >
-                  <UKFlag className="w-3.5 h-2.5" />
-                  <span>EN</span>
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Biashara Portal</span>
+                  <span className="sm:hidden">{lang === 'en' ? 'Portal' : 'Tovuti'}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setLang('sw')}
-                  className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
-                    lang === 'sw' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500'
-                  }`}
-                >
-                  <TanzaniaFlag className="w-3.5 h-2.5" />
-                  <span>SW</span>
-                </button>
+
+                <HaloPesaLogo className="h-6" />
+
+                {/* Language Switcher */}
+                <div className="flex items-center bg-stone-100 p-0.5 rounded-lg text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setLang('en')}
+                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
+                      lang === 'en' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500'
+                    }`}
+                  >
+                    <UKFlag className="w-3.5 h-2.5" />
+                    <span>EN</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLang('sw')}
+                    className={`px-2 py-0.5 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
+                      lang === 'sw' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-500'
+                    }`}
+                  >
+                    <TanzaniaFlag className="w-3.5 h-2.5" />
+                    <span>SW</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dashboard Body */}
+              <div className="flex-1 p-4 overflow-y-auto">
+                <Dashboard
+                  t={t}
+                  lang={lang}
+                  balance={balance}
+                  transactions={transactions}
+                  activeLoan={activeLoan}
+                  onNavigateToBiashara={() => navigateToPage('home')}
+                  onOpenSend={() => setSendOpen(true)}
+                  onOpenWithdraw={() => setWithdrawOpen(true)}
+                  onOpenLipa={() => setLipaOpen(true)}
+                  onOpenBank={() => setBankOpen(true)}
+                  onOpenAirtime={() => setAirtimeOpen(true)}
+                  onOpenSavings={() => setSavingsOpen(true)}
+                />
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Dashboard Body */}
-            <div className="flex-1 p-4 overflow-y-auto">
-              <Dashboard
-                t={t}
-                lang={lang}
-                balance={balance}
-                transactions={transactions}
-                activeLoan={activeLoan}
-                onNavigateToBiashara={() => setCurrentScreen('biashara-home')}
-                onOpenSend={() => setSendOpen(true)}
-                onOpenWithdraw={() => setWithdrawOpen(true)}
-                onOpenLipa={() => setLipaOpen(true)}
-                onOpenBank={() => setBankOpen(true)}
-                onOpenAirtime={() => setAirtimeOpen(true)}
-                onOpenSavings={() => setSavingsOpen(true)}
-                onBackToHero={() => setCurrentScreen('biashara-home')}
-              />
-            </div>
-          </div>
-        )}
+        {/* Global Transaction Modals */}
+        <SendMoneyModal
+          isOpen={sendOpen}
+          onClose={() => setSendOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
+        <WithdrawModal
+          isOpen={withdrawOpen}
+          onClose={() => setWithdrawOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
+        <LipaModal
+          isOpen={lipaOpen}
+          onClose={() => setLipaOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
+        <BankModal
+          isOpen={bankOpen}
+          onClose={() => setBankOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
+        <AirtimeModal
+          isOpen={airtimeOpen}
+          onClose={() => setAirtimeOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
+        <SavingsModal
+          isOpen={savingsOpen}
+          onClose={() => setSavingsOpen(false)}
+          t={t}
+          lang={lang}
+          onTransactionComplete={handleTransactionComplete}
+        />
       </div>
+    );
+  }
 
-      {/* Global Transaction Modals */}
-      <SendMoneyModal
-        isOpen={sendOpen}
-        onClose={() => setSendOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
+  // ═════════════════════════════════════════════════════════════════════════
+  // VIEW 3: DYNAMIC MULTI-PAGE BIASHARA LOANS WEBSITE
+  // ═════════════════════════════════════════════════════════════════════════
+  return (
+    <div className="min-h-screen bg-white text-stone-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+      {/* Sticky Top Navigation with Active Highlight */}
+      <BiasharaNavbar
+        activePage={activePage}
+        onNavigatePage={navigateToPage}
+        onNavigateToApply={() => navigateToPage('apply')}
+        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
       />
-      <WithdrawModal
-        isOpen={withdrawOpen}
-        onClose={() => setWithdrawOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
-      />
-      <LipaModal
-        isOpen={lipaOpen}
-        onClose={() => setLipaOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
-      />
-      <BankModal
-        isOpen={bankOpen}
-        onClose={() => setBankOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
-      />
-      <AirtimeModal
-        isOpen={airtimeOpen}
-        onClose={() => setAirtimeOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
-      />
-      <SavingsModal
-        isOpen={savingsOpen}
-        onClose={() => setSavingsOpen(false)}
-        t={t}
-        lang={lang}
-        onTransactionComplete={handleTransactionComplete}
+
+      {/* Dynamic Page Router Body */}
+      <main className="flex-1">
+        {/* Dynamic Page 1: Home */}
+        {activePage === 'home' && (
+          <BiasharaHomePage
+            onNavigateToApply={() => navigateToPage('apply')}
+            onNavigatePage={navigateToPage}
+            onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+            onApplyWithParams={(params) => {
+              setLoanApplyParams((prev) => ({ ...prev, ...params }));
+              navigateToPage('apply');
+            }}
+          />
+        )}
+
+        {/* Dynamic Page 2: How It Works */}
+        {activePage === 'how-it-works' && (
+          <BiasharaHowItWorksPage
+            onNavigateToApply={() => navigateToPage('apply')}
+          />
+        )}
+
+        {/* Dynamic Page 3: Calculator */}
+        {activePage === 'calculator' && (
+          <BiasharaCalculatorPage
+            onApplyWithAmount={(params) => {
+              setLoanApplyParams((prev) => ({ ...prev, ...params }));
+              navigateToPage('apply');
+            }}
+          />
+        )}
+
+        {/* Dynamic Page 4: Supported Sectors */}
+        {activePage === 'sectors' && (
+          <BiasharaSectorsPage
+            onSelectSectorAndApply={(sectorName) => {
+              setLoanApplyParams((prev) => ({ ...prev, businessCategory: sectorName }));
+              navigateToPage('apply');
+            }}
+          />
+        )}
+
+        {/* Dynamic Page 5: Track Loan */}
+        {activePage === 'track' && (
+          <BiasharaTrackPage
+            activeLoan={activeLoan}
+            onNavigateToApply={() => navigateToPage('apply')}
+            onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+          />
+        )}
+
+        {/* Dynamic Page 6: FAQs */}
+        {activePage === 'faqs' && (
+          <BiasharaFAQPage
+            onNavigateToSupport={() => navigateToPage('support')}
+            onNavigateToApply={() => navigateToPage('apply')}
+          />
+        )}
+
+        {/* Dynamic Page 7: Support */}
+        {activePage === 'support' && (
+          <BiasharaSupportPage />
+        )}
+      </main>
+
+      {/* Shared Footer */}
+      <BiasharaFooter
+        onNavigatePage={navigateToPage}
+        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+        onNavigateToApply={() => navigateToPage('apply')}
       />
     </div>
   );

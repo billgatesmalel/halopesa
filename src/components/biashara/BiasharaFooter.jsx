@@ -2,7 +2,7 @@ import React from 'react';
 import { HaloPesaLogo } from '../BrandLogo';
 import { ShieldCheck, PhoneCall, Wallet } from 'lucide-react';
 
-export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScrollToSection }) {
+export function BiasharaFooter({ onNavigatePage, onNavigateToHaloPesa, onNavigateToApply }) {
   return (
     <footer className="bg-stone-900 text-stone-300 pt-16 pb-12 border-t border-stone-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,16 +31,16 @@ export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScro
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Dynamic Navigation Pages */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider">
-              Quick Links / Viungo vya Haraka
+              Explore Pages / Kurasa
             </h4>
             <ul className="space-y-2 text-xs sm:text-sm text-stone-400">
               <li>
                 <button
                   type="button"
-                  onClick={() => onScrollToSection('hero')}
+                  onClick={() => onNavigatePage('home')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Home / Nyumbani
@@ -49,16 +49,7 @@ export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScro
               <li>
                 <button
                   type="button"
-                  onClick={() => onScrollToSection('calculator')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Loan Calculator / Kikokotoo cha Mkopo
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onScrollToSection('how-it-works')}
+                  onClick={() => onNavigatePage('how-it-works')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   How It Works / Jinsi Inavyofanya Kazi
@@ -67,10 +58,46 @@ export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScro
               <li>
                 <button
                   type="button"
-                  onClick={() => onScrollToSection('faqs')}
+                  onClick={() => onNavigatePage('calculator')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Loan Calculator / Kikokotoo cha Mkopo
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage('sectors')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Supported Sectors / Sekta Zinazofadhiliwa
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage('track')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Track Loan / Fuatilia Maombi
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage('faqs')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   FAQs / Maswali na Majibu
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigatePage('support')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Support / Huduma kwa Wateja
                 </button>
               </li>
               <li>
@@ -96,7 +123,7 @@ export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScro
                 <span>Helpline: <strong>100</strong> (Toll Free / Bure) au <strong>0622 100 100</strong></span>
               </div>
               <p className="text-stone-500 text-xs">
-                Hours: 24 Hours / Saa 24 kila siku
+                Operating Hours: 24/7/365 (Saa 24 kila siku)
               </p>
             </div>
 
@@ -116,7 +143,7 @@ export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScro
 
         {/* Bottom Credits */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-4">
-          <p>© {new Date().getFullYear()} HaloPesa Biashara Loans. All rights reserved.</p>
+          <p>© 2026 HaloPesa Biashara Loans. All rights reserved.</p>
           <p className="flex items-center gap-1">
             Built with modern React & Tailwind CSS for Tanzania
           </p>
