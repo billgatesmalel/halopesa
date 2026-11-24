@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { HaloPesaLogo } from '../BrandLogo';
-import { Wallet, ArrowRight, Menu, X, ShieldCheck } from 'lucide-react';
+import { Wallet, ArrowRight, Menu, X } from 'lucide-react';
 
 export function BiasharaNavbar({ onNavigateToApply, onNavigateToHaloPesa, onScrollToSection }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

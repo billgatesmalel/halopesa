@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Calculator, CheckCircle2, ShieldCheck, Zap, Wallet } from 'lucide-react';
+import { ArrowRight, Calculator, CheckCircle2, Zap, Wallet } from 'lucide-react';
 
 export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateToHaloPesa }) {
   return (
@@ -169,8 +169,8 @@ export function BiasharaHero({ onNavigateToApply, onScrollToSection, onNavigateT
 
             {/* Floating Live Badge */}
             <div className="absolute -bottom-4 -left-4 sm:left-4 bg-white/95 backdrop-blur-md border border-stone-200 p-3 sm:p-3.5 rounded-2xl shadow-xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-[#F05A22] font-extrabold text-sm">
-                ⚡
+              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#F05A22]" />
               </div>
               <div className="text-left">
                 <p className="text-xs font-extrabold text-stone-900 leading-tight">

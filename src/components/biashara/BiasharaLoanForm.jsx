@@ -7,7 +7,12 @@ import {
   CheckCircle2,
   Wallet,
   Loader2,
-  Sparkles
+  Sparkles,
+  User,
+  Store,
+  Calculator,
+  ClipboardCheck,
+  Check
 } from 'lucide-react';
 
 export function BiasharaLoanForm({
@@ -17,7 +22,12 @@ export function BiasharaLoanForm({
   onBack,
   onLoanSuccess
 }) {
-  // Form State
+  // Current Step: 1 | 2 | 3 | 4
+  const [currentStep, setCurrentStep] = useState(1);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [validationError, setValidationError] = useState('');
+
+  // Form State - Step 1: Personal Information
   const [fullname, setFullname] = useState(userName || '');
   const [nationalId, setNationalId] = useState('');
   const [phone, setPhone] = useState(userPhone || '0622 145 890');
@@ -25,11 +35,13 @@ export function BiasharaLoanForm({
   const [gender, setGender] = useState('Female');
   const [maritalStatus, setMaritalStatus] = useState('Married');
 
+  // Form State - Step 2: Business Information
   const [bizCategory, setBizCategory] = useState(initialParams.businessCategory || 'Retail & Small Shops');
   const [bizLocation, setBizLocation] = useState('Dar es Salaam, Kariakoo');
   const [monthlyRevenue, setMonthlyRevenue] = useState('1000000:2500000');
   const [bizAge, setBizAge] = useState('1-3 Years');
 
+  // Form State - Step 3: Loan Request & Terms
   const [amount, setAmount] = useState(initialParams.amount || 500000);
   const [durationMonths, setDurationMonths] = useState(initialParams.durationMonths || 2);
   const [loanPurpose, setLoanPurpose] = useState('Stock Purchase / Kuongeza Bidhaa');
@@ -44,6 +56,7 @@ export function BiasharaLoanForm({
   const monthlyRate = 0.05; // 5% simple interest per month
   const totalInterest = Math.round(amount * monthlyRate * durationMonths);
   const totalRepayment = amount + totalInterest;
+  const monthlyInstallment = Math.round(totalRepayment / durationMonths);
 
   // Calculated Due Date memoized
   const formattedDueDate = useMemo(() => {
@@ -56,14 +69,51 @@ export function BiasharaLoanForm({
     });
   }, [durationMonths]);
 
-  const handleCompleteRedirect = useCallback(() => {
-    if (onLoanSuccess && approvedLoanData) {
-      onLoanSuccess(approvedLoanData);
-    }
-  }, [onLoanSuccess, approvedLoanData]);
-
-  const handleSubmit = (e) => {
+  // Step Validation & Navigation
+  const handleNextFromStep1 = (e) => {
     e.preventDefault();
+    setValidationError('');
+    if (!fullname.trim()) {
+      setValidationError('Please enter your full name as shown on NIDA / Tafadhali jaza jina lako kamili.');
+      return;
+    }
+    if (!nationalId.trim()) {
+      setValidationError('Please enter your National ID (NIDA) / Tafadhali jaza namba yako ya NIDA.');
+      return;
+    }
+    if (!phone.trim()) {
+      setValidationError('Please enter your HaloPesa phone number / Tafadhali jaza namba ya HaloPesa.');
+      return;
+    }
+    setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextFromStep2 = (e) => {
+    e.preventDefault();
+    setValidationError('');
+    if (!bizLocation.trim()) {
+      setValidationError('Please enter your business location / Tafadhali jaza eneo la biashara yako.');
+      return;
+    }
+    setCurrentStep(3);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextFromStep3 = (e) => {
+    e.preventDefault();
+    setValidationError('');
+    setCurrentStep(4);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFinalSubmit = (e) => {
+    e.preventDefault();
+    if (!agreedToTerms) {
+      setValidationError('Please agree to the Terms & Conditions to proceed / Tafadhali kubali Masharti na Vigezo.');
+      return;
+    }
+
     setSubmissionState('processing');
     setProcessingStep(1);
 
@@ -83,7 +133,7 @@ export function BiasharaLoanForm({
         amount: Number(amount),
         durationMonths,
         totalRepayment,
-        monthlyInstallment: Math.round(totalRepayment / durationMonths),
+        monthlyInstallment,
         dueDate: formattedDueDate,
         borrowerName: fullname || 'HaloPesa Merchant',
         phone,
@@ -94,6 +144,12 @@ export function BiasharaLoanForm({
       setSubmissionState('approved');
     }, 2800);
   };
+
+  const handleCompleteRedirect = useCallback(() => {
+    if (onLoanSuccess && approvedLoanData) {
+      onLoanSuccess(approvedLoanData);
+    }
+  }, [onLoanSuccess, approvedLoanData]);
 
   // Countdown timer when approved to auto-redirect to HaloPesa dashboard
   useEffect(() => {
@@ -112,12 +168,19 @@ export function BiasharaLoanForm({
     }
   }, [submissionState, approvedLoanData, handleCompleteRedirect]);
 
+  const stepMeta = [
+    { num: 1, titleEn: 'Personal Info', titleSw: 'Binafsi', icon: User },
+    { num: 2, titleEn: 'Business Details', titleSw: 'Biashara', icon: Store },
+    { num: 3, titleEn: 'Loan Request', titleSw: 'Mkopo', icon: Calculator },
+    { num: 4, titleEn: 'Verification', titleSw: 'Uhakiki', icon: ClipboardCheck }
+  ];
+
   return (
-    <div className="min-h-screen bg-stone-100 py-6 sm:py-10 px-3 sm:px-6 flex justify-center">
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-stone-200 overflow-hidden">
+    <div className="min-h-screen bg-stone-100/80 py-6 sm:py-10 px-3 sm:px-6 flex justify-center">
+      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-stone-200/90 overflow-hidden">
         
         {/* Top Header Bar */}
-        <div className="bg-gradient-to-r from-stone-900 to-stone-800 text-white px-6 py-5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-stone-900 to-stone-800 text-white px-5 sm:px-8 py-5 flex items-center justify-between">
           <button
             type="button"
             onClick={onBack}
@@ -125,7 +188,7 @@ export function BiasharaLoanForm({
             className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-stone-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Home / Rudi Nyuma</span>
+            <span>Back / Rudi</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -138,14 +201,15 @@ export function BiasharaLoanForm({
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            STATE 1: FORM INPUT (IDLE)
+            STATE 1: 4-STEP WIZARD FORM (IDLE)
         ════════════════════════════════════════════════════════════════════ */}
         {submissionState === 'idle' && (
-          <div className="p-6 sm:p-10">
-            {/* Form Banner */}
+          <div className="p-5 sm:p-10">
+            
+            {/* Header Titles */}
             <div className="text-center max-w-xl mx-auto mb-8">
               <span className="inline-block text-[11px] font-extrabold uppercase tracking-wider text-[#F05A22] bg-orange-100 px-3 py-1 rounded-full mb-2">
-                100% Digital Application / Maombi ya Kidijitali
+                100% Digital & Paperless / Kidijitali 100%
               </span>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
                 Biashara Loans Application
@@ -153,226 +217,343 @@ export function BiasharaLoanForm({
                   / Fomu ya Maombi ya Mkopo wa Biashara
                 </span>
               </h1>
-              <p className="text-xs sm:text-sm text-stone-600 mt-2">
-                Fill the simple details below to receive instant capital directly to your registered HaloPesa line.
-                <span className="block text-stone-500 italic text-[11px] sm:text-xs mt-0.5">
-                  / Jaza taarifa rahisi hapa chini upokee pesa kwenye laini yako ya HaloPesa bila dhamana ya mali.
+              <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
+                Complete the 4 simple steps below to receive instant capital directly to your HaloPesa line.
+                <span className="block text-stone-400 italic text-[11px] mt-0.5">
+                  / Kamilisha hatua 4 rahisi hapa chini upokee pesa kwenye simu yako ya HaloPesa.
                 </span>
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              
-              {/* SECTION 1: PERSONAL INFORMATION */}
-              <div className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-stone-200">
-                  <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black text-xs">
-                    1
-                  </div>
-                  <h2 className="text-sm sm:text-base font-extrabold text-stone-900">
-                    Personal Information / Taarifa Binafsi
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Full Name */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Full Name (As on NIDA) / Jina Kamili (Kama lilivyo NIDA) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={fullname}
-                      onChange={(e) => setFullname(e.target.value)}
-                      placeholder="e.g. Juma Rashid Bakari / Jina lako kamili"
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22] bg-white transition-colors"
-                    />
-                  </div>
-
-                  {/* National ID (NIDA) */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      National ID (NIDA) / Namba ya NIDA *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={nationalId}
-                      onChange={(e) => setNationalId(e.target.value)}
-                      placeholder="e.g. 19901234-12345-00001-22"
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22] bg-white transition-colors"
-                    />
-                  </div>
-
-                  {/* HaloPesa Phone Number */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Phone Number (HaloPesa Line) / Namba ya Simu (HaloPesa) *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g. 0622 123 456"
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22] bg-white transition-colors"
-                    />
-                  </div>
-
-                  {/* Age */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Age (Years) / Umri (Miaka 18+) *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min="18"
-                      max="85"
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22] bg-white transition-colors"
-                    />
-                  </div>
-
-                  {/* Gender */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Gender / Jinsia *
-                    </label>
-                    <select
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+            {/* Stepper Progress Bar (Clean SVG Steps) */}
+            <div className="mb-8">
+              {/* Step Pills Row */}
+              <div className="grid grid-cols-4 gap-2 sm:gap-4 relative mb-3">
+                {stepMeta.map((s) => {
+                  const Icon = s.icon;
+                  const isCompleted = currentStep > s.num;
+                  const isCurrent = currentStep === s.num;
+                  return (
+                    <div
+                      key={s.num}
+                      className={`flex flex-col items-center text-center p-2 rounded-xl transition-all ${
+                        isCurrent
+                          ? 'bg-orange-50 border border-orange-200 shadow-xs'
+                          : isCompleted
+                          ? 'bg-emerald-50/70 border border-emerald-200'
+                          : 'bg-stone-50 border border-stone-200/70 opacity-60'
+                      }`}
                     >
-                      <option value="Female">Female / Mwanamke</option>
-                      <option value="Male">Male / Mwanaume</option>
-                    </select>
-                  </div>
-
-                  {/* Marital Status */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Marital Status / Hali ya Ndoa *
-                    </label>
-                    <select
-                      value={maritalStatus}
-                      onChange={(e) => setMaritalStatus(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
-                    >
-                      <option value="Single">Single / Hujafunga Ndoa</option>
-                      <option value="Married">Married / Umeoa au Umeolewa</option>
-                      <option value="Divorced">Divorced / Umeachika</option>
-                      <option value="Widowed">Widowed / Mjane</option>
-                    </select>
-                  </div>
-                </div>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs mb-1.5 transition-colors ${
+                          isCompleted
+                            ? 'bg-emerald-600 text-white'
+                            : isCurrent
+                            ? 'bg-[#F05A22] text-white shadow-xs'
+                            : 'bg-stone-200 text-stone-600'
+                        }`}
+                      >
+                        {isCompleted ? <Check className="w-4 h-4 stroke-[3]" /> : <Icon className="w-4 h-4" />}
+                      </div>
+                      <span className="text-[11px] sm:text-xs font-bold text-stone-900 leading-tight">
+                        {s.titleEn}
+                      </span>
+                      <span className="text-[10px] text-stone-500 font-medium">
+                        / {s.titleSw}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* SECTION 2: BUSINESS INFORMATION */}
-              <div className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-stone-200">
-                  <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black text-xs">
-                    2
-                  </div>
-                  <h2 className="text-sm sm:text-base font-extrabold text-stone-900">
-                    Business Information / Taarifa za Biashara
-                  </h2>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Category */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Business Category / Aina ya Biashara *
-                    </label>
-                    <select
-                      value={bizCategory}
-                      onChange={(e) => setBizCategory(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
-                    >
-                      <option value="Retail & Small Shops">Retail & Small Shops / Maduka & Biashara Ndogondogo</option>
-                      <option value="Agriculture & Farming">Agriculture & Farming / Kilimo & Ufugaji</option>
-                      <option value="Transport & Bodaboda">Transport & Bodaboda / Usafiri & Bodaboda</option>
-                      <option value="Salon & Beauty Services">Salon & Beauty / Saluni & Urembo</option>
-                      <option value="Food & Restaurant Vendors">Food & Restaurant / Mama Ntilie & Migahawa</option>
-                      <option value="Wholesale & Distribution">Wholesale & Trade / Jumla & Usambazaji</option>
-                      <option value="Other Business">Other Services / Huduma Nyingine</option>
-                    </select>
-                  </div>
-
-                  {/* Monthly Income */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Monthly Revenue (TZS) / Mauzo ya Mwezi *
-                    </label>
-                    <select
-                      value={monthlyRevenue}
-                      onChange={(e) => setMonthlyRevenue(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
-                    >
-                      <option value="0:500000">Below TZS 500,000 / Chini ya TZS 500,000</option>
-                      <option value="500001:1000000">TZS 500,000 - TZS 1,000,000</option>
-                      <option value="1000001:2500000">TZS 1,000,000 - TZS 2,500,000</option>
-                      <option value="2500001:5000000">TZS 2,500,000 - TZS 5,000,000</option>
-                      <option value="5000001:15000000">Above TZS 5,000,000 / Zaidi ya TZS 5,000,000</option>
-                    </select>
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Business Location / Mahali Biashara Ilipo (Mkoa & Eneo) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={bizLocation}
-                      onChange={(e) => setBizLocation(e.target.value)}
-                      placeholder="e.g. Dar es Salaam, Kariakoo / Mkoa na Eneo"
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white transition-colors"
-                    />
-                  </div>
-
-                  {/* Business Age */}
-                  <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Operating Period / Muda wa Biashara *
-                    </label>
-                    <select
-                      value={bizAge}
-                      onChange={(e) => setBizAge(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
-                    >
-                      <option value="Under 6 Months">Under 6 Months / Chini ya miezi 6</option>
-                      <option value="6-12 Months">6 - 12 Months / Miezi 6 hadi 12</option>
-                      <option value="1-3 Years">1 - 3 Years / Miaka 1 hadi 3</option>
-                      <option value="Over 3 Years">Over 3 Years / Zaidi ya miaka 3</option>
-                    </select>
-                  </div>
-                </div>
+              {/* Progress Line */}
+              <div className="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-[#F05A22] h-full transition-all duration-300"
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
+                ></div>
               </div>
+            </div>
 
-              {/* SECTION 3: LOAN AMOUNT & REPAYMENT */}
-              <div className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 sm:p-6 space-y-4">
-                <div className="flex items-center gap-2 pb-2 border-b border-stone-200">
-                  <div className="w-7 h-7 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black text-xs">
-                    3
+            {/* Validation Error Banner */}
+            {validationError && (
+              <div className="mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{validationError}</span>
+              </div>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════════
+                STEP 1: PERSONAL INFORMATION
+            ═══════════════════════════════════════════════════════════════════ */}
+            {currentStep === 1 && (
+              <form onSubmit={handleNextFromStep1} className="space-y-5 animate-in fade-in duration-200">
+                <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-extrabold text-stone-900 leading-none">
+                        Step 1: Personal Information / Taarifa Binafsi
+                      </h2>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Your identity details as registered on your National ID (NIDA)
+                      </p>
+                    </div>
                   </div>
-                  <h2 className="text-sm sm:text-base font-extrabold text-stone-900">
-                    Loan Request & Terms / Kiasi na Masharti ya Mkopo
-                  </h2>
-                </div>
 
-                <div className="space-y-4">
-                  {/* Amount */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5">
-                      <label className="text-xs font-bold text-stone-700">
-                        Loan Amount / Kiasi cha Mkopo (TZS) *
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Full Name */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Full Name (As on NIDA) / Jina Kamili (Kama lilivyo NIDA) *
                       </label>
-                      <span className="text-base font-extrabold text-[#F05A22]">
+                      <input
+                        type="text"
+                        required
+                        value={fullname}
+                        onChange={(e) => setFullname(e.target.value)}
+                        placeholder="e.g. Juma Rashid Bakari / Jina lako kamili"
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* National ID */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        National ID (NIDA) / Namba ya NIDA *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={nationalId}
+                        onChange={(e) => setNationalId(e.target.value)}
+                        placeholder="e.g. 19901234-12345-00001-22"
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all font-mono"
+                      />
+                    </div>
+
+                    {/* HaloPesa Phone Number */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Phone Number (HaloPesa Line) / Namba ya Simu (HaloPesa) *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="e.g. 0622 123 456"
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* Age */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Age (Years) / Umri (Miaka 18+) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="18"
+                        max="85"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* Gender */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Gender / Jinsia *
+                      </label>
+                      <select
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+                      >
+                        <option value="Female">Female / Mwanamke</option>
+                        <option value="Male">Male / Mwanaume</option>
+                      </select>
+                    </div>
+
+                    {/* Marital Status */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Marital Status / Hali ya Ndoa *
+                      </label>
+                      <select
+                        value={maritalStatus}
+                        onChange={(e) => setMaritalStatus(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+                      >
+                        <option value="Single">Single / Hujafunga Ndoa</option>
+                        <option value="Married">Married / Umeoa au Umeolewa</option>
+                        <option value="Divorced">Divorced / Umeachika</option>
+                        <option value="Widowed">Widowed / Mjane</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    className="w-full sm:w-auto px-7 py-3.5 rounded-xl font-extrabold text-white text-sm bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.98] shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <span>Next: Business Details / Endelea: Taarifa za Biashara</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════════
+                STEP 2: BUSINESS INFORMATION
+            ═══════════════════════════════════════════════════════════════════ */}
+            {currentStep === 2 && (
+              <form onSubmit={handleNextFromStep2} className="space-y-5 animate-in fade-in duration-200">
+                <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-5 sm:p-6 space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black">
+                      <Store className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-extrabold text-stone-900 leading-none">
+                        Step 2: Business Information / Taarifa za Biashara
+                      </h2>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Tell us about your business activity and cashflow
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Category */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Business Category / Aina ya Biashara *
+                      </label>
+                      <select
+                        value={bizCategory}
+                        onChange={(e) => setBizCategory(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+                      >
+                        <option value="Retail & Small Shops">Retail & Small Shops / Maduka & Biashara Ndogondogo</option>
+                        <option value="Agriculture & Farming">Agriculture & Farming / Kilimo & Ufugaji</option>
+                        <option value="Transport & Bodaboda">Transport & Bodaboda / Usafiri & Bodaboda</option>
+                        <option value="Salon & Beauty Services">Salon & Beauty / Saluni & Urembo</option>
+                        <option value="Food & Restaurant Vendors">Food & Restaurant / Mama Ntilie & Migahawa</option>
+                        <option value="Wholesale & Distribution">Wholesale & Trade / Jumla & Usambazaji</option>
+                        <option value="Other Business">Other Services / Huduma Nyingine</option>
+                      </select>
+                    </div>
+
+                    {/* Monthly Revenue */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Monthly Revenue (TZS) / Mauzo ya Mwezi *
+                      </label>
+                      <select
+                        value={monthlyRevenue}
+                        onChange={(e) => setMonthlyRevenue(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+                      >
+                        <option value="0:500000">Below TZS 500,000 / Chini ya TZS 500,000</option>
+                        <option value="500001:1000000">TZS 500,000 - TZS 1,000,000</option>
+                        <option value="1000001:2500000">TZS 1,000,000 - TZS 2,500,000</option>
+                        <option value="2500001:5000000">TZS 2,500,000 - TZS 5,000,000</option>
+                        <option value="5000001:15000000">Above TZS 5,000,000 / Zaidi ya TZS 5,000,000</option>
+                      </select>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Business Location / Mahali Biashara Ilipo (Mkoa & Eneo) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={bizLocation}
+                        onChange={(e) => setBizLocation(e.target.value)}
+                        placeholder="e.g. Dar es Salaam, Kariakoo / Mkoa na Eneo"
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* Operating Period */}
+                    <div>
+                      <label className="block text-xs font-bold text-stone-700 mb-1">
+                        Operating Period / Muda wa Biashara *
+                      </label>
+                      <select
+                        value={bizAge}
+                        onChange={(e) => setBizAge(e.target.value)}
+                        className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
+                      >
+                        <option value="Under 6 Months">Under 6 Months / Chini ya miezi 6</option>
+                        <option value="6-12 Months">6 - 12 Months / Miezi 6 hadi 12</option>
+                        <option value="1-3 Years">1 - 3 Years / Miaka 1 hadi 3</option>
+                        <option value="Over 3 Years">Over 3 Years / Zaidi ya miaka 3</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(1)}
+                    className="px-5 py-3 rounded-xl font-bold text-stone-700 text-sm bg-stone-100 hover:bg-stone-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back / Rudi</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="px-7 py-3.5 rounded-xl font-extrabold text-white text-sm bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.98] shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <span>Next: Loan Request / Endelea: Kiasi cha Mkopo</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════════
+                STEP 3: LOAN REQUEST & TERMS
+            ═══════════════════════════════════════════════════════════════════ */}
+            {currentStep === 3 && (
+              <form onSubmit={handleNextFromStep3} className="space-y-5 animate-in fade-in duration-200">
+                <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-5 sm:p-6 space-y-5">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#F05A22] flex items-center justify-center font-black">
+                      <Calculator className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-extrabold text-stone-900 leading-none">
+                        Step 3: Loan Request & Terms / Kiasi na Masharti ya Mkopo
+                      </h2>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Choose your required capital and preferred repayment tenure
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Amount Slider */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-xs font-bold text-stone-700">
+                        Loan Amount / Kiasi cha Mkopo (TZS):
+                      </label>
+                      <span className="text-lg font-black text-[#F05A22] font-mono">
                         TZS {Number(amount).toLocaleString()}
                       </span>
                     </div>
@@ -384,19 +565,24 @@ export function BiasharaLoanForm({
                       step="50000"
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
-                      className="w-full h-2.5 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#F05A22]"
+                      className="w-full h-3 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#F05A22]"
                     />
 
+                    <div className="flex justify-between text-[11px] text-stone-400 mt-1">
+                      <span>TZS 50,000 (Min)</span>
+                      <span>TZS 5,000,000 (Max)</span>
+                    </div>
+
                     {/* Chips */}
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {[100000, 300000, 500000, 1000000, 2000000, 3000000].map((val) => (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {[100000, 300000, 500000, 1000000, 2000000, 3000000, 5000000].map((val) => (
                         <button
                           key={val}
                           type="button"
                           onClick={() => setAmount(val)}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                          className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
                             amount === val
-                              ? 'bg-[#F05A22] text-white border-[#F05A22]'
+                              ? 'bg-[#F05A22] text-white border-[#F05A22] shadow-xs'
                               : 'bg-white text-stone-700 border-stone-200 hover:border-orange-300'
                           }`}
                         >
@@ -408,10 +594,10 @@ export function BiasharaLoanForm({
 
                   {/* Tenure */}
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                      Repayment Period / Muda wa Marejesho *
+                    <label className="block text-xs font-bold text-stone-700 mb-2">
+                      Repayment Period / Muda wa Marejesho:
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                       {[
                         { m: 1, en: '1 Month', sw: 'Mwezi 1' },
                         { m: 2, en: '2 Months', sw: 'Miezi 2' },
@@ -422,14 +608,14 @@ export function BiasharaLoanForm({
                           key={item.m}
                           type="button"
                           onClick={() => setDurationMonths(item.m)}
-                          className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                          className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${
                             durationMonths === item.m
-                              ? 'bg-white border-[#F05A22] ring-2 ring-[#F05A22]/20 text-[#F05A22]'
+                              ? 'bg-white border-[#F05A22] ring-2 ring-[#F05A22]/20 text-[#F05A22] shadow-xs'
                               : 'bg-white border-stone-200 text-stone-700 hover:border-stone-300'
                           }`}
                         >
                           <div className="text-xs font-black">{item.en}</div>
-                          <div className="text-[10px] text-stone-500 font-medium">/ {item.sw}</div>
+                          <div className="text-[10px] text-stone-500 font-medium mt-0.5">/ {item.sw}</div>
                         </button>
                       ))}
                     </div>
@@ -438,7 +624,7 @@ export function BiasharaLoanForm({
                   {/* Purpose */}
                   <div>
                     <label className="block text-xs font-bold text-stone-700 mb-1">
-                      Loan Purpose / Sababu ya Mkopo *
+                      Loan Purpose / Sababu ya Mkopo:
                     </label>
                     <select
                       value={loanPurpose}
@@ -452,53 +638,227 @@ export function BiasharaLoanForm({
                     </select>
                   </div>
 
-                  {/* Live Cost Summary Box */}
-                  <div className="bg-orange-50/70 border border-orange-200 rounded-xl p-4 space-y-2 text-xs">
+                  {/* Calculations Box */}
+                  <div className="bg-orange-50/80 border border-orange-200/80 rounded-2xl p-4 sm:p-5 space-y-2 text-xs">
                     <div className="flex justify-between items-center text-stone-700">
-                      <span>Loan Amount / Kiasi cha Mkopo:</span>
-                      <span className="font-bold text-stone-900">TZS {Number(amount).toLocaleString()}</span>
+                      <span>Principal Amount / Kiasi cha Mkopo:</span>
+                      <span className="font-bold text-stone-900 font-mono">TZS {Number(amount).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-700">
                       <span>Interest (5% p.m.) / Riba Nafuu:</span>
-                      <span className="font-bold text-stone-900">TZS {totalInterest.toLocaleString()}</span>
+                      <span className="font-bold text-stone-900 font-mono">TZS {totalInterest.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-700">
                       <span>Processing Fee / Ada ya Huduma:</span>
-                      <span className="font-bold text-[#009A44]">0 TZS (Free Promo / Bure)</span>
+                      <span className="font-bold text-[#009A44]">0 TZS (Free / Bure)</span>
                     </div>
-                    <div className="pt-2 border-t border-orange-200 flex justify-between items-center text-sm">
+                    <div className="pt-2.5 border-t border-orange-200 flex justify-between items-center text-sm">
                       <span className="font-extrabold text-stone-900">Total Repayable / Jumla ya Kulipa:</span>
-                      <span className="font-black text-[#F05A22]">TZS {totalRepayment.toLocaleString()}</span>
+                      <span className="font-black text-[#F05A22] font-mono text-base">
+                        TZS {totalRepayment.toLocaleString()}
+                      </span>
                     </div>
-                    <div className="flex justify-between items-center text-stone-600 text-[11px] pt-0.5">
+                    <div className="flex justify-between items-center text-stone-600 text-[11px] pt-1">
+                      <span>Monthly Installment / Rejesho kwa Mwezi:</span>
+                      <span className="font-bold font-mono">TZS {monthlyInstallment.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-stone-600 text-[11px]">
                       <span>Due Date / Tarehe ya Marejesho:</span>
-                      <span className="font-bold">{formattedDueDate}</span>
+                      <span className="font-bold text-stone-800">{formattedDueDate}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(2)}
+                    className="px-5 py-3 rounded-xl font-bold text-stone-700 text-sm bg-stone-100 hover:bg-stone-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back / Rudi</span>
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="px-7 py-3.5 rounded-xl font-extrabold text-white text-sm bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.98] shadow-md shadow-orange-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <span>Next: Review & Confirm / Endelea: Uhakiki</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ══════════════════════════════════════════════════════════════════
+                STEP 4: VERIFICATION & CONFIRMATION (REVIEW SUMMARY)
+            ═══════════════════════════════════════════════════════════════════ */}
+            {currentStep === 4 && (
+              <form onSubmit={handleFinalSubmit} className="space-y-5 animate-in fade-in duration-200">
+                <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-5 sm:p-6 space-y-5">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 text-[#009A44] flex items-center justify-center font-black">
+                      <ClipboardCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm sm:text-base font-extrabold text-stone-900 leading-none">
+                        Step 4: Review & Confirm / Uhakiki na Uthibitisho
+                      </h2>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Please review your application details before submitting for instant scoring
+                      </p>
                     </div>
                   </div>
 
+                  {/* Summary Cards Grid */}
+                  <div className="space-y-4">
+                    {/* Personal Summary */}
+                    <div className="bg-white border border-stone-200 rounded-xl p-4">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-100">
+                        <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <User className="w-3.5 h-3.5 text-[#F05A22]" />
+                          <span>1. Applicant Information / Taarifa za Mwombaji</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(1)}
+                          className="text-[11px] font-bold text-[#F05A22] hover:underline cursor-pointer"
+                        >
+                          Edit / Badilisha
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Name / Jina:</span>
+                          <span className="font-bold text-stone-800">{fullname}</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">NIDA ID / NIDA:</span>
+                          <span className="font-bold text-stone-800 font-mono">{nationalId}</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Phone / HaloPesa:</span>
+                          <span className="font-bold text-stone-800 font-mono">{phone}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Business Summary */}
+                    <div className="bg-white border border-stone-200 rounded-xl p-4">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-100">
+                        <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <Store className="w-3.5 h-3.5 text-[#F05A22]" />
+                          <span>2. Business Information / Taarifa za Biashara</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(2)}
+                          className="text-[11px] font-bold text-[#F05A22] hover:underline cursor-pointer"
+                        >
+                          Edit / Badilisha
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Category / Aina:</span>
+                          <span className="font-bold text-stone-800">{bizCategory}</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Location / Eneo:</span>
+                          <span className="font-bold text-stone-800">{bizLocation}</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Experience / Muda:</span>
+                          <span className="font-bold text-stone-800">{bizAge}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Loan Summary */}
+                    <div className="bg-white border border-stone-200 rounded-xl p-4">
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-100">
+                        <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                          <Calculator className="w-3.5 h-3.5 text-[#F05A22]" />
+                          <span>3. Loan Terms / Masharti ya Mkopo</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setCurrentStep(3)}
+                          className="text-[11px] font-bold text-[#F05A22] hover:underline cursor-pointer"
+                        >
+                          Edit / Badilisha
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Amount / Kiasi:</span>
+                          <span className="font-black text-[#F05A22] font-mono text-sm">
+                            TZS {Number(amount).toLocaleString()}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Tenure / Muda:</span>
+                          <span className="font-bold text-stone-800">{durationMonths} Months</span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Total Due / Kulipa:</span>
+                          <span className="font-bold text-stone-900 font-mono">
+                            TZS {totalRepayment.toLocaleString()}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-stone-400 block text-[10px]">Due Date / Tarehe:</span>
+                          <span className="font-bold text-stone-800">{formattedDueDate}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Terms & Conditions Checkbox */}
+                  <div className="pt-2">
+                    <label className="flex items-start gap-3 p-3.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 cursor-pointer transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={agreedToTerms}
+                        onChange={(e) => {
+                          setAgreedToTerms(e.target.checked);
+                          if (e.target.checked) setValidationError('');
+                        }}
+                        className="mt-0.5 h-4 w-4 rounded text-[#F05A22] focus:ring-[#F05A22] border-stone-300 accent-[#F05A22]"
+                      />
+                      <span className="text-xs text-stone-700 leading-snug">
+                        I confirm all details are accurate and agree to HaloPesa Biashara Loan Terms & Conditions. I understand funds will be disbursed directly into my HaloPesa line.
+                        <span className="block text-stone-400 text-[11px] italic mt-0.5">
+                          / Nathibitisha taarifa nilizotoa ni sahihi na ninakubaliana na Masharti ya Mikopo ya Biashara HaloPesa.
+                        </span>
+                      </span>
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              {/* Terms disclaimer */}
-              <div className="flex items-start gap-2.5 text-xs text-stone-500">
-                <ShieldCheck className="w-4 h-4 text-[#009A44] shrink-0 mt-0.5" />
-                <p>
-                  By submitting this application, you agree to HaloPesa Biashara Loan Terms & Conditions. No physical collateral required. Funds will disburse directly to your HaloPesa wallet.
-                  <span className="block italic text-[11px] text-stone-400 mt-0.5">
-                    / Kwa kuwasilisha, unakubaliana na Masharti ya Mikopo ya Biashara HaloPesa. Fedha zitaingizwa moja kwa moja kwenye akaunti yako.
-                  </span>
-                </p>
-              </div>
+                {/* Navigation Buttons */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="px-5 py-3 rounded-xl font-bold text-stone-700 text-sm bg-stone-100 hover:bg-stone-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span>Back / Rudi</span>
+                  </button>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full py-4 px-6 rounded-2xl font-extrabold text-white text-base bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.99] shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <span>Submit Application for Assessment / Tuma Maombi ya Mkopo</span>
-                <ArrowRight className="w-5 h-5 stroke-[2.2]" />
-              </button>
-            </form>
+                  <button
+                    type="submit"
+                    className="px-8 py-4 rounded-xl font-extrabold text-white text-sm sm:text-base bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.98] shadow-lg shadow-orange-500/25 flex items-center gap-2 transition-all cursor-pointer"
+                  >
+                    <ShieldCheck className="w-5 h-5" />
+                    <span>Submit Application for Assessment / Tuma Maombi</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
           </div>
         )}
 
@@ -526,7 +886,7 @@ export function BiasharaLoanForm({
 
             {/* Steps Progress Checklist */}
             <div className="w-full max-w-sm mt-8 space-y-3 text-left">
-              <div className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${
+              <div className={`p-3.5 rounded-xl border flex items-center gap-3 transition-colors ${
                 processingStep >= 1 ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-stone-50 border-stone-200 text-stone-400'
               }`}>
                 {processingStep > 1 ? (
@@ -539,7 +899,7 @@ export function BiasharaLoanForm({
                 </div>
               </div>
 
-              <div className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${
+              <div className={`p-3.5 rounded-xl border flex items-center gap-3 transition-colors ${
                 processingStep >= 2 ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-stone-50 border-stone-200 text-stone-400'
               }`}>
                 {processingStep > 2 ? (
@@ -554,7 +914,7 @@ export function BiasharaLoanForm({
                 </div>
               </div>
 
-              <div className={`p-3 rounded-xl border flex items-center gap-3 transition-colors ${
+              <div className={`p-3.5 rounded-xl border flex items-center gap-3 transition-colors ${
                 processingStep >= 3 ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-stone-50 border-stone-200 text-stone-400'
               }`}>
                 {processingStep === 3 ? (

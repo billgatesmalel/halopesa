@@ -1,6 +1,6 @@
 import React from 'react';
 import { HaloPesaLogo } from '../BrandLogo';
-import { ShieldCheck, PhoneCall, Wallet, Heart } from 'lucide-react';
+import { ShieldCheck, PhoneCall, Wallet } from 'lucide-react';
 
 export function BiasharaFooter({ onNavigateToHaloPesa, onNavigateToApply, onScrollToSection }) {
   return (
