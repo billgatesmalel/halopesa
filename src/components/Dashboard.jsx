@@ -10,11 +10,8 @@ import {
   EyeOff,
   ArrowUpRight,
   ShieldCheck,
-  Search,
-  Filter,
-  Plus,
-  RefreshCw,
-  PhoneCall
+  TrendingUp,
+  ArrowRight
 } from 'lucide-react';
 import { GoldCoin } from './BrandLogo';
 
@@ -23,18 +20,31 @@ export function Dashboard({
   lang,
   balance,
   transactions,
+  activeLoan = null,
+  onNavigateToBiashara,
   onOpenSend,
   onOpenWithdraw,
   onOpenLipa,
   onOpenBank,
   onOpenAirtime,
-  onOpenSavings,
-  onBackToHero
+  onOpenSavings
 }) {
   const [showBalance, setShowBalance] = useState(true);
   const [filter, setFilter] = useState('all');
 
   const services = [
+    {
+      id: 'biashara-loan',
+      title: lang === 'en' ? 'Biashara Loans' : 'Mikopo ya Biashara',
+      desc: lang === 'en'
+        ? 'Collateral-free business capital from 50k to 5M TZS via HaloPesa.'
+        : 'Mtaji wa biashara bila dhamana wa TZS 50,000 hadi 5,000,000.',
+      icon: TrendingUp,
+      color: 'bg-[#F05A22]',
+      textColor: 'text-[#F05A22]',
+      action: onNavigateToBiashara,
+      badge: lang === 'en' ? 'Instant / Dakika 5' : 'Papo Hapo'
+    },
     {
       id: 'send',
       title: t.sendMoney,
@@ -105,6 +115,64 @@ export function Dashboard({
 
   return (
     <div className="space-y-6">
+      
+      {/* Active Biashara Loan Card (if user has taken a loan) */}
+      {activeLoan && (
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white p-5 sm:p-6 shadow-xl border border-stone-700 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between pb-3 border-b border-stone-700/80 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-xs font-bold text-orange-400 uppercase tracking-wider">
+                Active Biashara Loan / Mkopo wa Biashara Uliopo
+              </span>
+            </div>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-stone-800 border border-stone-600 text-stone-300">
+              {activeLoan.loanId}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <span className="text-[11px] text-stone-400 block">
+                Disbursed / Kiasi Kilichopokelewa:
+              </span>
+              <span className="text-lg sm:text-xl font-black text-emerald-400 font-mono">
+                TZS {activeLoan.amount.toLocaleString()}
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="text-[11px] text-stone-400 block">
+                Total Due / Jumla ya Kulipa:
+              </span>
+              <span className="text-lg sm:text-xl font-black text-white font-mono">
+                TZS {activeLoan.totalRepayment.toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-stone-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 text-xs mb-4">
+            <div className="flex items-center gap-1.5 text-stone-300">
+              <span>Due Date / Tarehe ya Marejesho:</span>
+              <strong className="text-orange-300">{activeLoan.dueDate}</strong>
+            </div>
+            <span className="text-[11px] text-emerald-400 font-semibold bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800">
+              Disbursed to HaloPesa
+            </span>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onNavigateToBiashara}
+              className="flex-1 py-2 px-3 rounded-xl bg-[#F05A22] hover:bg-[#D8450E] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Biashara Portal / Tovuti ya Mikopo</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Account Balance Card */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#F05A22] via-[#E24E16] to-[#C93B07] text-white p-6 sm:p-8 shadow-xl shadow-orange-500/15">
         {/* Subtle decorative coin in background */}
@@ -170,6 +238,29 @@ export function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Biashara Loans Quick Access Strip */}
+      {!activeLoan && (
+        <div
+          onClick={onNavigateToBiashara}
+          className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 flex items-center justify-between gap-3 cursor-pointer hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#F05A22] text-white flex items-center justify-center font-black">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-extrabold text-stone-900">
+                Apply for Biashara Loan / Omba Mkopo wa Biashara
+              </h4>
+              <p className="text-[11px] text-stone-500">
+                Up to TZS 5,000,000 instant funding without collateral / Bila dhamana
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-[#F05A22] shrink-0" />
+        </div>
+      )}
 
       {/* Services Grid */}
       <div>

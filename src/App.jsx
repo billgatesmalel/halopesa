@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from './translations';
+import { BiasharaHomePage } from './components/biashara/BiasharaHomePage';
+import { BiasharaLoanForm } from './components/biashara/BiasharaLoanForm';
 import { OnboardingHero } from './components/OnboardingHero';
 import { PhoneAuthScreen } from './components/PhoneAuthScreen';
 import { Dashboard } from './components/Dashboard';
@@ -15,12 +17,29 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [lang, setLang] = useState('en'); // 'en' | 'sw'
-  // Navigation screen: 'onboarding' | 'auth' | 'dashboard'
-  const [currentScreen, setCurrentScreen] = useState('onboarding');
-  const [userPhone, setUserPhone] = useState('');
-  const [userName, setUserName] = useState('');
+  
+  // Navigation screen:
+  // 'biashara-home': Modern Bidii-style homepage for Biashara Loans
+  // 'biashara-apply': Simple bilingual loan application form
+  // 'onboarding': HaloPesa onboarding screen
+  // 'auth': HaloPesa phone authentication
+  // 'dashboard': HaloPesa wallet dashboard ("where we had left the project")
+  const [currentScreen, setCurrentScreen] = useState('biashara-home');
 
-  // Simulated Account State
+  const [userPhone, setUserPhone] = useState('0628 123 456');
+  const [userName, setUserName] = useState('');
+  
+  // Active loan object once approved
+  const [activeLoan, setActiveLoan] = useState(null);
+
+  // Pre-selected parameters from homepage calculator / sectors
+  const [loanApplyParams, setLoanApplyParams] = useState({
+    amount: 500000,
+    durationMonths: 2,
+    businessCategory: 'Retail & Small Shops'
+  });
+
+  // Simulated Account State (HaloPesa Wallet)
   const [balance, setBalance] = useState(485250); // 485,250 TZS initial
   const [transactions, setTransactions] = useState([
     {
@@ -95,6 +114,32 @@ export default function App() {
     setCurrentScreen('dashboard');
   };
 
+  // Callback when a Biashara loan is successfully approved and disbursed
+  const handleLoanSuccess = (loanData) => {
+    setActiveLoan(loanData);
+    
+    // Add disbursed funds to HaloPesa wallet balance
+    setBalance((prev) => prev + loanData.amount);
+
+    // Create a new deposit transaction in the account statement
+    const newTx = {
+      id: loanData.loanId,
+      title: 'Biashara Loan Disbursement / Mkopo wa Biashara',
+      amount: loanData.amount,
+      fee: 0,
+      date: 'Just now, ' + (loanData.disbursedAt || 'Today'),
+      category: 'loan'
+    };
+
+    setTransactions((prev) => [newTx, ...prev]);
+
+    if (loanData.borrowerName) setUserName(loanData.borrowerName);
+    if (loanData.phone) setUserPhone(loanData.phone);
+
+    // Redirect to where we had left the project (Dashboard)
+    setCurrentScreen('dashboard');
+  };
+
   // Callback when user performs any transaction
   const handleTransactionComplete = async (newTx) => {
     setBalance((prev) => prev + newTx.amount - (newTx.fee || 0));
@@ -111,10 +156,45 @@ export default function App() {
     }
   };
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // VIEW 1: MODERN BIASHARA LOANS HOMEPAGE (FULL-WIDTH MODERN CODES)
+  // ═════════════════════════════════════════════════════════════════════════
+  if (currentScreen === 'biashara-home') {
+    return (
+      <BiasharaHomePage
+        onNavigateToApply={() => setCurrentScreen('biashara-apply')}
+        onNavigateToHaloPesa={() => setCurrentScreen('dashboard')}
+        onApplyWithParams={(params) => {
+          setLoanApplyParams((prev) => ({ ...prev, ...params }));
+          setCurrentScreen('biashara-apply');
+        }}
+      />
+    );
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // VIEW 2: BIASHARA LOAN APPLICATION FORM (BILINGUAL SWAHILI STROKES)
+  // ═════════════════════════════════════════════════════════════════════════
+  if (currentScreen === 'biashara-apply') {
+    return (
+      <BiasharaLoanForm
+        initialParams={loanApplyParams}
+        userPhone={userPhone}
+        userName={userName}
+        onBack={() => setCurrentScreen('biashara-home')}
+        onLoanSuccess={handleLoanSuccess}
+      />
+    );
+  }
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // VIEW 3: HALOPESA APP PORTAL & DASHBOARD (WHERE WE HAD LEFT OFF)
+  // ═════════════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen w-full bg-[#FEF3EF] flex justify-center">
-      <div className="w-full max-w-[460px] min-h-screen bg-white sm:shadow-2xl flex flex-col justify-between relative">
-        {/* Screen 1: Onboarding Hero */}
+    <div className="min-h-screen w-full bg-[#FEF3EF] flex justify-center py-0 sm:py-6">
+      <div className="w-full max-w-[460px] min-h-screen sm:min-h-[92vh] bg-white sm:rounded-3xl sm:shadow-2xl flex flex-col justify-between relative overflow-hidden sm:border sm:border-stone-200">
+        
+        {/* Screen: Onboarding Hero */}
         {currentScreen === 'onboarding' && (
           <OnboardingHero
             lang={lang}
@@ -124,28 +204,31 @@ export default function App() {
           />
         )}
 
-        {/* Screen 2: Phone Number Input (Matches User's Reference Screenshot) */}
+        {/* Screen: Phone Number Input */}
         {currentScreen === 'auth' && (
           <PhoneAuthScreen
             lang={lang}
             t={t}
-            onBack={() => setCurrentScreen('onboarding')}
+            onBack={() => setCurrentScreen('biashara-home')}
             onContinue={handlePhoneAuth}
           />
         )}
 
-        {/* Screen 3: Interactive HaloPesa Services & Portal */}
+        {/* Screen: Interactive HaloPesa Services & Portal (Dashboard) */}
         {currentScreen === 'dashboard' && (
           <div className="flex-1 h-full flex flex-col bg-[#FAF7F2] overflow-hidden">
             {/* Top Navigation Bar in Dashboard */}
             <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 flex items-center justify-between shadow-xs z-30">
+              {/* Back to Biashara Loans Homepage */}
               <button
                 type="button"
-                onClick={() => setCurrentScreen('auth')}
+                onClick={() => setCurrentScreen('biashara-home')}
                 className="flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#F05A22] transition-colors cursor-pointer"
+                title="Go to Biashara Loans / Rudi Tovuti ya Mikopo"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>{t.backButton || (lang === 'en' ? 'Back' : 'Rudi')}</span>
+                <span className="hidden sm:inline">Biashara Loans</span>
+                <span className="sm:hidden">{lang === 'en' ? 'Loans' : 'Mikopo'}</span>
               </button>
 
               <HaloPesaLogo className="h-6" />
@@ -182,13 +265,15 @@ export default function App() {
                 lang={lang}
                 balance={balance}
                 transactions={transactions}
+                activeLoan={activeLoan}
+                onNavigateToBiashara={() => setCurrentScreen('biashara-home')}
                 onOpenSend={() => setSendOpen(true)}
                 onOpenWithdraw={() => setWithdrawOpen(true)}
                 onOpenLipa={() => setLipaOpen(true)}
                 onOpenBank={() => setBankOpen(true)}
                 onOpenAirtime={() => setAirtimeOpen(true)}
                 onOpenSavings={() => setSavingsOpen(true)}
-                onBackToHero={() => setCurrentScreen('onboarding')}
+                onBackToHero={() => setCurrentScreen('biashara-home')}
               />
             </div>
           </div>
