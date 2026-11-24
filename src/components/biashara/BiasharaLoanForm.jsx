@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { HaloPesaLogo } from '../BrandLogo';
+import { BiasharaLogo } from './BiasharaLogo';
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,8 +12,11 @@ import {
   Store,
   Calculator,
   ClipboardCheck,
-  Check
+  Check,
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react';
+import { getStoredLoanRules } from '../../utils/loanRules';
 
 export function BiasharaLoanForm({
   initialParams = {},
@@ -22,6 +25,8 @@ export function BiasharaLoanForm({
   onBack,
   onLoanSuccess
 }) {
+  const [loanRules] = useState(getStoredLoanRules());
+
   // Current Step: 1 | 2 | 3 | 4
   const [currentStep, setCurrentStep] = useState(1);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -38,13 +43,31 @@ export function BiasharaLoanForm({
   // Form State - Step 2: Business Information
   const [bizCategory, setBizCategory] = useState(initialParams.businessCategory || 'Retail & Small Shops');
   const [bizLocation, setBizLocation] = useState('Dar es Salaam, Kariakoo');
-  const [monthlyRevenue, setMonthlyRevenue] = useState('1000000:2500000');
+  const [monthlyRevenue, setMonthlyRevenue] = useState(initialParams.salaryRange || '1000001:2500000');
   const [bizAge, setBizAge] = useState('1-3 Years');
 
-  // Form State - Step 3: Loan Request & Terms
+  // Find active salary bracket based on selected monthly revenue
+  const activeBracket = useMemo(() => {
+    return (
+      loanRules.salaryBrackets.find((b) => b.range === monthlyRevenue) ||
+      loanRules.salaryBrackets[1] ||
+      loanRules.salaryBrackets[0]
+    );
+  }, [loanRules, monthlyRevenue]);
+
+  // Form State - Step 3: Loan Request & Terms (Bounded by Active Salary Bracket)
   const [amount, setAmount] = useState(initialParams.amount || 500000);
   const [durationMonths, setDurationMonths] = useState(initialParams.durationMonths || 2);
   const [loanPurpose, setLoanPurpose] = useState('Stock Purchase / Kuongeza Bidhaa');
+
+  // Ensure amount is clamped within salary bracket
+  useEffect(() => {
+    if (amount > activeBracket.maxLoan) {
+      setAmount(activeBracket.maxLoan);
+    } else if (amount < activeBracket.minLoan) {
+      setAmount(activeBracket.minLoan);
+    }
+  }, [activeBracket]);
 
   // Submission & Processing States: 'idle' | 'processing' | 'approved'
   const [submissionState, setSubmissionState] = useState('idle');
@@ -53,7 +76,7 @@ export function BiasharaLoanForm({
   const [redirectCountdown, setRedirectCountdown] = useState(4);
 
   // Live Calculations
-  const monthlyRate = 0.05; // 5% simple interest per month
+  const monthlyRate = (loanRules.interestRateMonthly || 5) / 100;
   const totalInterest = Math.round(amount * monthlyRate * durationMonths);
   const totalRepayment = amount + totalInterest;
   const monthlyInstallment = Math.round(totalRepayment / durationMonths);
@@ -137,9 +160,25 @@ export function BiasharaLoanForm({
         dueDate: formattedDueDate,
         borrowerName: fullname || 'HaloPesa Merchant',
         phone,
+        nida: nationalId,
+        age: Number(age),
+        gender,
+        maritalStatus,
         category: bizCategory,
+        location: bizLocation,
+        monthlyRevenue: activeBracket.labelEn,
+        status: 'Disbursed',
+        createdAt: new Date().toISOString(),
         disbursedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
+
+      // Save application into localStorage for Super Admin Panel
+      try {
+        const stored = JSON.parse(localStorage.getItem('biashara_applications') || '[]');
+        stored.unshift(loanInfo);
+        localStorage.setItem('biashara_applications', JSON.stringify(stored));
+      } catch (err) {}
+
       setApprovedLoanData(loanInfo);
       setSubmissionState('approved');
     }, 2800);
@@ -188,16 +227,10 @@ export function BiasharaLoanForm({
             className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-stone-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back / Rudi</span>
+            <span>Back to Portal / Rudi</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <HaloPesaLogo className="h-6" variant="white" />
-            <div className="h-4 w-px bg-stone-700"></div>
-            <span className="text-sm font-extrabold text-[#F05A22]">
-              Biashara<span className="text-white">Loans</span>
-            </span>
-          </div>
+          <BiasharaLogo variant="white" />
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
@@ -218,16 +251,12 @@ export function BiasharaLoanForm({
                 </span>
               </h1>
               <p className="text-xs sm:text-sm text-stone-500 mt-1.5">
-                Complete the 4 simple steps below to receive instant capital directly to your HaloPesa line.
-                <span className="block text-stone-400 italic text-[11px] mt-0.5">
-                  / Kamilisha hatua 4 rahisi hapa chini upokee pesa kwenye simu yako ya HaloPesa.
-                </span>
+                Complete the 4 steps below. Approved funds disburse directly to your HaloPesa wallet.
               </p>
             </div>
 
-            {/* Stepper Progress Bar (Clean SVG Steps) */}
+            {/* Stepper Progress Bar */}
             <div className="mb-8">
-              {/* Step Pills Row */}
               <div className="grid grid-cols-4 gap-2 sm:gap-4 relative mb-3">
                 {stepMeta.map((s) => {
                   const Icon = s.icon;
@@ -413,7 +442,7 @@ export function BiasharaLoanForm({
             )}
 
             {/* ══════════════════════════════════════════════════════════════════
-                STEP 2: BUSINESS INFORMATION
+                STEP 2: BUSINESS INFORMATION & SALARY RANGE
             ═══════════════════════════════════════════════════════════════════ */}
             {currentStep === 2 && (
               <form onSubmit={handleNextFromStep2} className="space-y-5 animate-in fade-in duration-200">
@@ -424,10 +453,10 @@ export function BiasharaLoanForm({
                     </div>
                     <div>
                       <h2 className="text-sm sm:text-base font-extrabold text-stone-900 leading-none">
-                        Step 2: Business Information / Taarifa za Biashara
+                        Step 2: Business & Monthly Revenue / Taarifa za Biashara & Mauzo
                       </h2>
                       <p className="text-[11px] text-stone-500 mt-0.5">
-                        Tell us about your business activity and cashflow
+                        Your borrowing capacity will be calibrated by your monthly sales or salary
                       </p>
                     </div>
                   </div>
@@ -453,21 +482,21 @@ export function BiasharaLoanForm({
                       </select>
                     </div>
 
-                    {/* Monthly Revenue */}
+                    {/* Monthly Income / Salary */}
                     <div>
                       <label className="block text-xs font-bold text-stone-700 mb-1">
-                        Monthly Revenue (TZS) / Mauzo ya Mwezi *
+                        Monthly Revenue or Salary / Mauzo au Mshahara *
                       </label>
                       <select
                         value={monthlyRevenue}
                         onChange={(e) => setMonthlyRevenue(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
-                        <option value="0:500000">Below TZS 500,000 / Chini ya TZS 500,000</option>
-                        <option value="500001:1000000">TZS 500,000 - TZS 1,000,000</option>
-                        <option value="1000001:2500000">TZS 1,000,000 - TZS 2,500,000</option>
-                        <option value="2500001:5000000">TZS 2,500,000 - TZS 5,000,000</option>
-                        <option value="5000001:15000000">Above TZS 5,000,000 / Zaidi ya TZS 5,000,000</option>
+                        {loanRules.salaryBrackets.map((b) => (
+                          <option key={b.id} value={b.range}>
+                            {b.labelEn} (Max: TZS {b.maxLoan.toLocaleString()})
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -503,6 +532,14 @@ export function BiasharaLoanForm({
                       </select>
                     </div>
                   </div>
+
+                  {/* Active Salary Tier Callout */}
+                  <div className="p-3 bg-orange-50/80 border border-orange-200 rounded-xl flex items-center justify-between text-xs text-stone-800">
+                    <span className="font-semibold">Eligible Loan Limit for this Salary Tier:</span>
+                    <strong className="text-[#F05A22] font-mono text-sm">
+                      Up to TZS {activeBracket.maxLoan.toLocaleString()}
+                    </strong>
+                  </div>
                 </div>
 
                 {/* Navigation Buttons */}
@@ -528,7 +565,7 @@ export function BiasharaLoanForm({
             )}
 
             {/* ══════════════════════════════════════════════════════════════════
-                STEP 3: LOAN REQUEST & TERMS
+                STEP 3: LOAN REQUEST & TERMS (Bounded by Salary Bracket)
             ═══════════════════════════════════════════════════════════════════ */}
             {currentStep === 3 && (
               <form onSubmit={handleNextFromStep3} className="space-y-5 animate-in fade-in duration-200">
@@ -542,7 +579,7 @@ export function BiasharaLoanForm({
                         Step 3: Loan Request & Terms / Kiasi na Masharti ya Mkopo
                       </h2>
                       <p className="text-[11px] text-stone-500 mt-0.5">
-                        Choose your required capital and preferred repayment tenure
+                        Choose your required capital up to your salary limit of TZS {activeBracket.maxLoan.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -560,35 +597,17 @@ export function BiasharaLoanForm({
 
                     <input
                       type="range"
-                      min="50000"
-                      max="5000000"
+                      min={activeBracket.minLoan}
+                      max={activeBracket.maxLoan}
                       step="50000"
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
                       className="w-full h-3 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-[#F05A22]"
                     />
 
-                    <div className="flex justify-between text-[11px] text-stone-400 mt-1">
-                      <span>TZS 50,000 (Min)</span>
-                      <span>TZS 5,000,000 (Max)</span>
-                    </div>
-
-                    {/* Chips */}
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {[100000, 300000, 500000, 1000000, 2000000, 3000000, 5000000].map((val) => (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => setAmount(val)}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                            amount === val
-                              ? 'bg-[#F05A22] text-white border-[#F05A22] shadow-xs'
-                              : 'bg-white text-stone-700 border-stone-200 hover:border-orange-300'
-                          }`}
-                        >
-                          TZS {val >= 1000000 ? `${val / 1000000}M` : `${val / 1000}K`}
-                        </button>
-                      ))}
+                    <div className="flex justify-between text-[11px] text-stone-400 mt-1 font-mono">
+                      <span>Min: TZS {activeBracket.minLoan.toLocaleString()}</span>
+                      <span>Max: TZS {activeBracket.maxLoan.toLocaleString()}</span>
                     </div>
                   </div>
 
@@ -645,7 +664,7 @@ export function BiasharaLoanForm({
                       <span className="font-bold text-stone-900 font-mono">TZS {Number(amount).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-700">
-                      <span>Interest (5% p.m.) / Riba Nafuu:</span>
+                      <span>Interest ({loanRules.interestRateMonthly || 5}% p.m.) / Riba:</span>
                       <span className="font-bold text-stone-900 font-mono">TZS {totalInterest.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-700">
@@ -658,9 +677,9 @@ export function BiasharaLoanForm({
                         TZS {totalRepayment.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-stone-600 text-[11px] pt-1">
+                    <div className="flex justify-between items-center text-stone-600 text-[11px] pt-1 font-mono">
                       <span>Monthly Installment / Rejesho kwa Mwezi:</span>
-                      <span className="font-bold font-mono">TZS {monthlyInstallment.toLocaleString()}</span>
+                      <span className="font-bold">TZS {monthlyInstallment.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center text-stone-600 text-[11px]">
                       <span>Due Date / Tarehe ya Marejesho:</span>
@@ -765,12 +784,12 @@ export function BiasharaLoanForm({
                           <span className="font-bold text-stone-800">{bizCategory}</span>
                         </div>
                         <div>
-                          <span className="text-stone-400 block text-[10px]">Location / Eneo:</span>
-                          <span className="font-bold text-stone-800">{bizLocation}</span>
+                          <span className="text-stone-400 block text-[10px]">Salary / Revenue Tier:</span>
+                          <span className="font-bold text-stone-800">{activeBracket.labelEn}</span>
                         </div>
                         <div>
-                          <span className="text-stone-400 block text-[10px]">Experience / Muda:</span>
-                          <span className="font-bold text-stone-800">{bizAge}</span>
+                          <span className="text-stone-400 block text-[10px]">Location / Eneo:</span>
+                          <span className="font-bold text-stone-800">{bizLocation}</span>
                         </div>
                       </div>
                     </div>
@@ -828,9 +847,9 @@ export function BiasharaLoanForm({
                         className="mt-0.5 h-4 w-4 rounded text-[#F05A22] focus:ring-[#F05A22] border-stone-300 accent-[#F05A22]"
                       />
                       <span className="text-xs text-stone-700 leading-snug">
-                        I confirm all details are accurate and agree to HaloPesa Biashara Loan Terms & Conditions. I understand funds will be disbursed directly into my HaloPesa line.
+                        I confirm all details are accurate and agree to Biashara Loan Terms & Conditions. I understand funds will be disbursed directly into my HaloPesa line.
                         <span className="block text-stone-400 text-[11px] italic mt-0.5">
-                          / Nathibitisha taarifa nilizotoa ni sahihi na ninakubaliana na Masharti ya Mikopo ya Biashara HaloPesa.
+                          / Nathibitisha taarifa nilizotoa ni sahihi na ninakubaliana na Masharti ya Mikopo ya Biashara.
                         </span>
                       </span>
                     </label>
@@ -881,7 +900,7 @@ export function BiasharaLoanForm({
             </h2>
 
             <p className="text-xs sm:text-sm text-stone-500 mt-2 max-w-md">
-              Please wait while our automated scoring engine verifies your details and sets up your disbursement...
+              Please wait while our automated scoring engine verifies your salary bracket and prepares your HaloPesa payout...
             </p>
 
             {/* Steps Progress Checklist */}
@@ -895,7 +914,7 @@ export function BiasharaLoanForm({
                   <Loader2 className="w-5 h-5 text-emerald-600 animate-spin shrink-0" />
                 )}
                 <div className="text-xs font-bold leading-snug">
-                  Verifying HaloPesa Account / Kuhakiki namba ya HaloPesa ({phone})
+                  Verifying Identity & HaloPesa Line ({phone})
                 </div>
               </div>
 
@@ -910,7 +929,7 @@ export function BiasharaLoanForm({
                   <div className="w-5 h-5 rounded-full border border-stone-300 shrink-0"></div>
                 )}
                 <div className="text-xs font-bold leading-snug">
-                  Automated Credit Assessment / Kukagua alama za mkopo
+                  Salary Calibration: Approved for TZS {Number(amount).toLocaleString()}
                 </div>
               </div>
 
@@ -923,7 +942,7 @@ export function BiasharaLoanForm({
                   <div className="w-5 h-5 rounded-full border border-stone-300 shrink-0"></div>
                 )}
                 <div className="text-xs font-bold leading-snug">
-                  Preparing Instant Payout / Kutuma TZS {Number(amount).toLocaleString()} HaloPesa
+                  Disbursing Funds to HaloPesa Wallet...
                 </div>
               </div>
             </div>
@@ -943,7 +962,7 @@ export function BiasharaLoanForm({
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-[#009A44] text-xs font-extrabold mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Loan Approved & Disbursed / Mkopo Umeidhinishwa & Kulipwa!</span>
+              <span>Loan Approved & Disbursed / Mkopo Umeidhinishwa!</span>
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
@@ -965,11 +984,15 @@ export function BiasharaLoanForm({
               </div>
               <div className="flex justify-between items-center text-stone-600">
                 <span>Disbursed Amount / Kiasi Kilichotumwa:</span>
-                <span className="font-bold text-[#009A44]">TZS {approvedLoanData.amount.toLocaleString()}</span>
+                <span className="font-bold text-[#009A44] font-mono">TZS {approvedLoanData.amount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center text-stone-600">
+                <span>Salary Tier / Kiwango cha Mshahara:</span>
+                <span className="font-bold text-stone-800">{approvedLoanData.monthlyRevenue}</span>
               </div>
               <div className="flex justify-between items-center text-stone-600">
                 <span>Total Repayment / Jumla ya Kurudisha:</span>
-                <span className="font-bold text-stone-900">TZS {approvedLoanData.totalRepayment.toLocaleString()}</span>
+                <span className="font-bold text-stone-900 font-mono">TZS {approvedLoanData.totalRepayment.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center text-stone-600">
                 <span>Due Date / Tarehe ya Marejesho:</span>

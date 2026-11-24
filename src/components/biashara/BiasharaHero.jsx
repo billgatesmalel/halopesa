@@ -17,22 +17,22 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
             {/* Trust Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100 border border-orange-200 text-[#F05A22] text-xs font-bold mb-5 shadow-xs">
               <span className="flex h-2 w-2 rounded-full bg-[#F05A22] animate-pulse"></span>
-              <span>Trusted Business Loans Across Tanzania / Mikopo Inayoaminika Tanzania</span>
+              <span>Biashara Loans Tanzania / Mikopo ya Biashara Inayoaminika</span>
             </div>
 
-            {/* Headline */}
+            {/* Headline: Prominently Biashara Loans */}
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-stone-900 tracking-tight leading-[1.18] mb-5">
-              Grow Your Business with Fast, Collateral-Free Funding
+              Biashara Loans: Fast, Collateral-Free Business Funding
               <span className="block text-2xl sm:text-3xl lg:text-4xl font-bold text-[#F05A22] mt-2">
-                / Kukuza Biashara Yako kwa Mkopo wa Haraka Bila Dhamana
+                / Mikopo ya Biashara: Mtaji wa Haraka Bila Dhamana
               </span>
             </h1>
 
             {/* Subtext */}
             <p className="text-stone-600 text-sm sm:text-base lg:text-lg leading-relaxed mb-8 max-w-2xl font-normal">
-              Get flexible capital from <strong className="text-stone-900 font-semibold">TZS 50,000 to TZS 5,000,000</strong>. Apply entirely online in under 5 minutes and receive cash directly into your <strong className="text-[#F05A22]">HaloPesa</strong> account.
-              <span className="block text-xs sm:text-sm text-stone-500 mt-1 italic">
-                / Pata mtaji wa uhakika wa kuanzia TZS 50,000 hadi TZS 5,000,000 moja kwa moja kwenye simu yako ya HaloPesa bila foleni wala dhamana za mali.
+              Get flexible capital from <strong className="text-stone-900 font-semibold">TZS 50,000 to TZS 5,000,000</strong> matched directly to your monthly sales turnover. Apply in under 5 minutes and receive instant disbursement directly into your <strong className="text-[#F05A22]">HaloPesa</strong> mobile line.
+              <span className="block text-xs sm:text-sm text-stone-500 mt-1.5 italic">
+                / Pata mtaji wa kuanzia TZS 50,000 hadi TZS 5,000,000 unaolingana na mshahara au mauzo yako, ukilipwa moja kwa moja kwenye simu yako ya HaloPesa.
               </span>
             </p>
 
@@ -43,7 +43,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 onClick={onNavigateToApply}
                 className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl font-extrabold text-white text-sm sm:text-base bg-[#F05A22] hover:bg-[#D8450E] active:scale-[0.98] shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
               >
-                <span>Apply Now / Omba Sasa</span>
+                <span>Apply for Loan / Omba Mkopo Sasa</span>
                 <ArrowRight className="w-5 h-5 stroke-[2.2]" />
               </button>
 
@@ -60,7 +60,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 type="button"
                 onClick={onNavigateToHaloPesa}
                 className="inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl font-bold text-stone-600 text-xs sm:text-sm bg-orange-50/60 hover:bg-orange-100/60 border border-orange-200/60 transition-all cursor-pointer"
-                title="Go to HaloPesa Mobile App / Nenda Kwenye HaloPesa"
+                title="Go to HaloPesa Mobile Wallet / Nenda Kwenye HaloPesa"
               >
                 <Wallet className="w-4 h-4 text-[#F05A22]" />
                 <span>HaloPesa Wallet / Pochi</span>
@@ -91,7 +91,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
 
           </div>
 
-          {/* Right Hero Mosaic Grid */}
+          {/* Right Hero Mosaic Grid (Authentic Tanzanian / African business owners) */}
           <div className="lg:col-span-5 relative">
             <div className="grid grid-cols-2 gap-3 sm:gap-4 cursor-pointer" onClick={() => onNavigatePage('sectors')}>
               
@@ -101,7 +101,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 <div className="group relative rounded-2xl overflow-hidden shadow-md bg-stone-100 border border-stone-200 aspect-[4/5]">
                   <img
                     src="/images/retail_shop.jpg"
-                    alt="Retail & small shops / Maduka"
+                    alt="Tanzanian retail shop owner / Duka la reja reja"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
@@ -118,7 +118,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 <div className="group relative rounded-2xl overflow-hidden shadow-md bg-stone-100 border border-stone-200 aspect-square">
                   <img
                     src="/images/wholesale.jpg"
-                    alt="Wholesale / Biashara za Jumla"
+                    alt="African wholesale distribution merchant / Biashara ya Jumla"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
@@ -138,7 +138,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 <div className="group relative rounded-2xl overflow-hidden shadow-md bg-stone-100 border border-stone-200 aspect-square">
                   <img
                     src="/images/agriculture.jpg"
-                    alt="Agriculture / Kilimo & Ufugaji"
+                    alt="Tanzanian farmer in agriculture field / Kilimo na Ufugaji"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
@@ -155,7 +155,7 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
                 <div className="group relative rounded-2xl overflow-hidden shadow-md bg-stone-100 border border-stone-200 aspect-[4/5]">
                   <img
                     src="/images/transport.jpg"
-                    alt="Transport / Usafiri & Bodaboda"
+                    alt="Tanzanian motorcycle bodaboda transport driver / Usafiri"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
                   />
@@ -178,10 +178,10 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
               </div>
               <div className="text-left">
                 <p className="text-xs font-extrabold text-stone-900 leading-tight">
-                  Disbursed in &lt; 5 Minutes / Dakika 5
+                  Instant Payout in &lt; 5 Mins
                 </p>
                 <p className="text-[11px] text-stone-500">
-                  Straight to HaloPesa / Moja kwa moja HaloPesa
+                  Disbursed via HaloPesa Mobile Money
                 </p>
               </div>
             </div>

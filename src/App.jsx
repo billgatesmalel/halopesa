@@ -10,6 +10,7 @@ import { BiasharaTrackPage } from './components/biashara/pages/BiasharaTrackPage
 import { BiasharaFAQPage } from './components/biashara/pages/BiasharaFAQPage';
 import { BiasharaSupportPage } from './components/biashara/pages/BiasharaSupportPage';
 import { BiasharaLoanForm } from './components/biashara/BiasharaLoanForm';
+import { SuperAdminPanel } from './components/biashara/admin/SuperAdminPanel';
 import { OnboardingHero } from './components/OnboardingHero';
 import { PhoneAuthScreen } from './components/PhoneAuthScreen';
 import { Dashboard } from './components/Dashboard';
@@ -30,7 +31,7 @@ export default function App() {
   // 'home' | 'how-it-works' | 'calculator' | 'sectors' | 'track' | 'faqs' | 'support' | 'apply' | 'dashboard' | 'onboarding' | 'auth'
   const [activePage, setActivePage] = useState(() => {
     const hash = window.location.hash.replace('#', '');
-    const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'dashboard', 'onboarding', 'auth'];
+    const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
     return validPages.includes(hash) ? hash : 'home';
   });
 
@@ -104,7 +105,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'dashboard', 'onboarding', 'auth'];
+      const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
       if (validPages.includes(hash)) {
         setActivePage(hash);
       }
@@ -182,6 +183,15 @@ export default function App() {
       // Local state already updated
     }
   };
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // VIEW 0: SUPER ADMIN PANEL
+  // ═════════════════════════════════════════════════════════════════════════
+  if (activePage === 'admin') {
+    return (
+      <SuperAdminPanel onBackToSite={() => navigateToPage('home')} />
+    );
+  }
 
   // ═════════════════════════════════════════════════════════════════════════
   // VIEW 1: DEDICATED 4-STEP LOAN APPLICATION PAGE

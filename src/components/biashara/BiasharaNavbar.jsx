@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { HaloPesaLogo } from '../BrandLogo';
-import { Wallet, ArrowRight, Menu, X, FileSearch } from 'lucide-react';
+import { BiasharaLogo } from './BiasharaLogo';
+import { Wallet, ArrowRight, Menu, X, ShieldAlert, Lock } from 'lucide-react';
 
 export function BiasharaNavbar({
   activePage = 'home',
@@ -32,18 +32,9 @@ export function BiasharaNavbar({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-18">
           
-          {/* Brand Logo & Name */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleNavClick('home')}>
-            <HaloPesaLogo className="h-8" />
-            <div className="h-6 w-px bg-stone-300 hidden sm:block"></div>
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900 leading-none">
-                Biashara<span className="text-[#F05A22]">Loans</span>
-              </span>
-              <span className="text-[10px] text-stone-500 font-semibold tracking-wide uppercase mt-0.5">
-                Mikopo ya Biashara
-              </span>
-            </div>
+          {/* Brand Logo & Name: Pure Biashara Loans */}
+          <div className="cursor-pointer" onClick={() => handleNavClick('home')}>
+            <BiasharaLogo />
           </div>
 
           {/* Desktop Navigation Links */}
@@ -68,7 +59,21 @@ export function BiasharaNavbar({
           </nav>
 
           {/* Action Buttons */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2.5">
+            {/* Super Admin Access Button */}
+            <button
+              type="button"
+              onClick={() => handleNavClick('admin')}
+              className={`p-2 rounded-xl transition-all cursor-pointer border ${
+                activePage === 'admin'
+                  ? 'bg-stone-900 text-white border-stone-900'
+                  : 'text-stone-500 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border-stone-200'
+              }`}
+              title="Super Admin Portal / Mfumo wa Wasimamizi"
+            >
+              <Lock className="w-4 h-4" />
+            </button>
+
             {/* Direct Switch to HaloPesa Project Dashboard */}
             <button
               type="button"
@@ -142,6 +147,18 @@ export function BiasharaNavbar({
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleNavClick('admin');
+              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-colors cursor-pointer"
+            >
+              <Lock className="w-4 h-4 text-stone-600" />
+              <span>Super Admin Portal / Msimamizi</span>
+            </button>
+
             <button
               type="button"
               onClick={() => {
