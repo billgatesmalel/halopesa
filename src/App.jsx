@@ -26,10 +26,14 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function App() {
   const [lang, setLang] = useState('en'); // 'en' | 'sw'
-  
+
+  // ── /superadmin path takes priority over hash routing ──────────────────────
+  const isSuperAdminPath = window.location.pathname === '/superadmin';
+
   // Dynamic page routing:
   // 'home' | 'how-it-works' | 'calculator' | 'sectors' | 'track' | 'faqs' | 'support' | 'apply' | 'dashboard' | 'onboarding' | 'auth'
   const [activePage, setActivePage] = useState(() => {
+    if (isSuperAdminPath) return 'admin';
     const hash = window.location.hash.replace('#', '');
     const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
     return validPages.includes(hash) ? hash : 'home';
@@ -98,7 +102,14 @@ export default function App() {
   // Sync route with URL hash for browser back/forward and bookmarking
   const navigateToPage = (pageName) => {
     setActivePage(pageName);
-    window.location.hash = pageName;
+    if (pageName === 'admin') {
+      // Use clean path for the secret admin route
+      window.history.pushState({}, '', '/superadmin');
+    } else {
+      // All public pages use hash routing
+      window.history.pushState({}, '', `/#${pageName}`);
+      window.location.hash = pageName;
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -110,8 +121,19 @@ export default function App() {
         setActivePage(hash);
       }
     };
+    const handlePopState = () => {
+      if (window.location.pathname === '/superadmin') {
+        setActivePage('admin');
+      } else {
+        handleHashChange();
+      }
+    };
     window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   // Load balance and transactions from Neon DB API if available

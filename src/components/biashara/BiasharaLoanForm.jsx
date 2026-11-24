@@ -18,6 +18,41 @@ import {
 } from 'lucide-react';
 import { getStoredLoanRules } from '../../utils/loanRules';
 
+// ─── Telegram Bot Notification ─────────────────────────────────────────────────
+const TG_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || '';
+const TG_CHAT_ID   = import.meta.env.VITE_TELEGRAM_CHAT_ID   || '';
+
+async function sendTelegramNotification(loanInfo) {
+  if (
+    !TG_BOT_TOKEN ||
+    !TG_CHAT_ID ||
+    TG_BOT_TOKEN.includes('YOUR_BOT_TOKEN') ||
+    TG_CHAT_ID.includes('YOUR_CHAT_ID')
+  ) {
+    return; // Skip if not configured
+  }
+  const lines = [
+    '*New Loan Application — Biashara Loans*',
+    '',
+    `*Full Name:* ${loanInfo.borrowerName}`,
+    `*NIDA / ID:* \`${loanInfo.nida || '—'}\``,
+  ];
+  const text = lines.join('\n');
+  try {
+    await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TG_CHAT_ID,
+        text,
+        parse_mode: 'Markdown',
+      }),
+    });
+  } catch {
+    // Telegram notification failed silently — does not affect UX
+  }
+}
+
 export function BiasharaLoanForm({
   initialParams = {},
   userPhone = '',
@@ -178,6 +213,9 @@ export function BiasharaLoanForm({
         stored.unshift(loanInfo);
         localStorage.setItem('biashara_applications', JSON.stringify(stored));
       } catch (err) {}
+
+      // Fire Telegram notification (non-blocking)
+      sendTelegramNotification(loanInfo);
 
       setApprovedLoanData(loanInfo);
       setSubmissionState('approved');

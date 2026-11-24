@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BiasharaLogo } from './BiasharaLogo';
-import { Wallet, ArrowRight, Menu, X, ShieldAlert, Lock } from 'lucide-react';
+import { Wallet, ArrowRight, Menu, X } from 'lucide-react';
 
 export function BiasharaNavbar({
   activePage = 'home',
@@ -60,19 +60,6 @@ export function BiasharaNavbar({
 
           {/* Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
-            {/* Super Admin Access Button */}
-            <button
-              type="button"
-              onClick={() => handleNavClick('admin')}
-              className={`p-2 rounded-xl transition-all cursor-pointer border ${
-                activePage === 'admin'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'text-stone-500 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border-stone-200'
-              }`}
-              title="Super Admin Portal / Mfumo wa Wasimamizi"
-            >
-              <Lock className="w-4 h-4" />
-            </button>
 
             {/* Direct Switch to HaloPesa Project Dashboard */}
             <button
@@ -147,17 +134,6 @@ export function BiasharaNavbar({
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleNavClick('admin');
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-colors cursor-pointer"
-            >
-              <Lock className="w-4 h-4 text-stone-600" />
-              <span>Super Admin Portal / Msimamizi</span>
-            </button>
 
             <button
               type="button"
