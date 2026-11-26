@@ -13,7 +13,6 @@ export function BiasharaNavbar({
   const navItems = [
     { label: 'Home / Nyumbani', id: 'home' },
     { label: 'How It Works / Hatua', id: 'how-it-works' },
-    { label: 'Calculator / Kikokotoo', id: 'calculator' },
     { label: 'Sectors / Sekta', id: 'sectors' },
     { label: 'Track Loan / Fuatilia', id: 'track' },
     { label: 'FAQs / Maswali', id: 'faqs' },

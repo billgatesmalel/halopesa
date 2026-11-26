@@ -4,7 +4,6 @@ import { BiasharaNavbar } from './components/biashara/BiasharaNavbar';
 import { BiasharaFooter } from './components/biashara/BiasharaFooter';
 import { BiasharaHomePage } from './components/biashara/BiasharaHomePage';
 import { BiasharaHowItWorksPage } from './components/biashara/pages/BiasharaHowItWorksPage';
-import { BiasharaCalculatorPage } from './components/biashara/pages/BiasharaCalculatorPage';
 import { BiasharaSectorsPage } from './components/biashara/pages/BiasharaSectorsPage';
 import { BiasharaTrackPage } from './components/biashara/pages/BiasharaTrackPage';
 import { BiasharaFAQPage } from './components/biashara/pages/BiasharaFAQPage';
@@ -35,21 +34,21 @@ export default function App() {
   const [activePage, setActivePage] = useState(() => {
     if (isSuperAdminPath) return 'admin';
     const hash = window.location.hash.replace('#', '');
-    const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
+    const validPages = ['home', 'how-it-works', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
     return validPages.includes(hash) ? hash : 'home';
   });
 
-  const [userPhone, setUserPhone] = useState('0628 123 456');
+  const [userPhone, setUserPhone] = useState('');
   const [userName, setUserName] = useState('');
   
   // Active loan object once approved
   const [activeLoan, setActiveLoan] = useState(null);
 
-  // Pre-selected parameters from homepage calculator / sectors
+  // Pre-selected parameters from sectors (if any)
   const [loanApplyParams, setLoanApplyParams] = useState({
-    amount: 500000,
+    amount: null,
     durationMonths: 2,
-    businessCategory: 'Retail & Small Shops'
+    businessCategory: ''
   });
 
   // Simulated Account State (HaloPesa Wallet)
@@ -116,7 +115,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      const validPages = ['home', 'how-it-works', 'calculator', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
+      const validPages = ['home', 'how-it-works', 'sectors', 'track', 'faqs', 'support', 'apply', 'admin', 'dashboard', 'onboarding', 'auth'];
       if (validPages.includes(hash)) {
         setActivePage(hash);
       }
@@ -405,17 +404,7 @@ export default function App() {
           />
         )}
 
-        {/* Dynamic Page 3: Calculator */}
-        {activePage === 'calculator' && (
-          <BiasharaCalculatorPage
-            onApplyWithAmount={(params) => {
-              setLoanApplyParams((prev) => ({ ...prev, ...params }));
-              navigateToPage('apply');
-            }}
-          />
-        )}
-
-        {/* Dynamic Page 4: Supported Sectors */}
+        {/* Dynamic Page 3: Supported Sectors */}
         {activePage === 'sectors' && (
           <BiasharaSectorsPage
             onSelectSectorAndApply={(sectorName) => {

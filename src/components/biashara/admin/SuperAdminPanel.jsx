@@ -1,54 +1,45 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BiasharaLogo } from '../BiasharaLogo';
 import { getStoredLoanRules, saveStoredLoanRules, DEFAULT_LOAN_RULES } from '../../../utils/loanRules';
 import {
+  Menu,
+  X,
   LogOut,
   Lock,
   Mail,
   Eye,
   EyeOff,
-  LayoutDashboard,
   Users,
   Settings,
   TrendingUp,
   CheckCircle2,
   XCircle,
-  Clock,
   Banknote,
   Search,
-  ChevronDown,
-  X,
   AlertCircle,
   Save,
   RefreshCw,
-  ArrowRight,
   ShieldCheck,
-  Store,
-  Tractor,
-  Truck,
-  Scissors,
-  UtensilsCrossed,
-  Package,
   BarChart3,
   PieChart,
   Activity,
   ArrowLeft
 } from 'lucide-react';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Environment Credentials ──────────────────────────────────────────────────
 const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || 'admin@biasharaloans.co.tz';
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'BiasharaAdmin2026!';
 
 const fmt = (n) =>
-  Number(n).toLocaleString('sw-TZ', { style: 'currency', currency: 'TZS', maximumFractionDigits: 0 });
+  `TZS ${Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
 
-const fmtNum = (n) => Number(n).toLocaleString('sw-TZ');
+const fmtNum = (n) => Number(n).toLocaleString('en-US');
 
-const STATUS_COLOR = {
-  Pending: 'bg-amber-100 text-amber-700 border border-amber-200',
-  Approved: 'bg-blue-100 text-blue-700 border border-blue-200',
-  Disbursed: 'bg-green-100 text-green-700 border border-green-200',
-  Rejected: 'bg-red-100 text-red-700 border border-red-200',
+const STATUS_BADGE = {
+  Pending: 'bg-slate-100 text-slate-700 border border-slate-300',
+  Approved: 'bg-slate-200 text-slate-800 border border-slate-300',
+  Disbursed: 'bg-slate-900 text-white border border-slate-900',
+  Rejected: 'bg-white text-slate-500 border border-slate-300 line-through',
 };
 
 const MOCK_APPLICANTS = [
@@ -69,7 +60,7 @@ const MOCK_APPLICANTS = [
     borrowerName: 'Juma Hassan',
     phone: '0712 882 190',
     nida: '19850314-00002-00002-02',
-    category: 'Transport & Logistics',
+    category: 'Transport & Bodaboda',
     monthlyRevenue: 'TZS 2,500,001 - 5,000,000',
     amount: 2800000,
     durationMonths: 4,
@@ -81,7 +72,7 @@ const MOCK_APPLICANTS = [
     borrowerName: 'Grace Mwangi',
     phone: '0754 320 008',
     nida: '19950702-00003-00003-03',
-    category: 'Hair Salon & Beauty',
+    category: 'Salon & Beauty Services',
     monthlyRevenue: 'TZS 500,001 - 1,000,000',
     amount: 600000,
     durationMonths: 2,
@@ -105,7 +96,7 @@ const MOCK_APPLICANTS = [
     borrowerName: 'Fatuma Ali',
     phone: '0754 110 445',
     nida: '19920803-00005-00005-05',
-    category: 'Food Vending & Markets',
+    category: 'Food & Restaurant Vendors',
     monthlyRevenue: 'Below TZS 500,000',
     amount: 200000,
     durationMonths: 1,
@@ -126,17 +117,8 @@ const MOCK_APPLICANTS = [
   },
 ];
 
-const SECTOR_ICONS = {
-  'Retail & Small Shops': Store,
-  'Agriculture & Farming': Tractor,
-  'Transport & Logistics': Truck,
-  'Hair Salon & Beauty': Scissors,
-  'Food Vending & Markets': UtensilsCrossed,
-  'Wholesale & Distribution': Package,
-};
-
-// ─── Admin Login ───────────────────────────────────────────────────────────────
-function AdminLoginView({ onLoginSuccess }) {
+// ─── Admin Login View (English Only, Clean Neutral UI) ────────────────────────
+function AdminLoginView({ onLoginSuccess, onBackToSite }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -156,74 +138,78 @@ function AdminLoginView({ onLoginSuccess }) {
         sessionStorage.setItem('biashara_admin_session', 'true');
         onLoginSuccess(email.trim());
       } else {
-        setError('Barua pepe au nywila si sahihi. / Invalid email or password.');
+        setError('Invalid email or password.');
         setLoading(false);
       }
-    }, 700);
+    }, 450);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-950 via-stone-900 to-stone-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#F05A22]/10 border border-[#F05A22]/30 mb-4">
-            <Lock className="w-7 h-7 text-[#F05A22]" />
+          <div className="flex justify-center mb-3">
+            <BiasharaLogo />
           </div>
-          <BiasharaLogo variant="white" />
-          <p className="text-stone-400 text-xs mt-2">Super Admin Portal / Mfumo wa Wasimamizi</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            Super Admin Portal
+          </p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-stone-900/70 border border-stone-700/60 backdrop-blur-sm rounded-2xl p-7 shadow-2xl">
-          <h2 className="text-white font-extrabold text-lg mb-1">Admin Login</h2>
-          <p className="text-stone-400 text-xs mb-6">/ Ingia kwa akaunti ya msimamizi</p>
+        <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-sm">
+          <h1 className="text-lg font-bold text-slate-900">Sign In</h1>
+          <p className="text-xs text-slate-500 mt-1 mb-6">
+            Enter your administrator credentials to continue.
+          </p>
 
           {error && (
-            <div className="flex items-start gap-2.5 mb-5 bg-red-950/50 border border-red-700/50 text-red-300 rounded-xl px-4 py-3 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="flex items-center gap-2 mb-5 bg-slate-100 border border-slate-300 text-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-slate-700" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
-              <label className="block text-xs font-bold text-stone-400 mb-1.5">
-                Email / Barua Pepe
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="email"
+                  name="email"
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="admin@biasharaloans.co.tz"
-                  className="w-full bg-stone-800 border border-stone-600 text-white text-sm rounded-xl pl-9 pr-4 py-2.5 placeholder-stone-500 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/50 transition-colors"
+                  placeholder="Enter admin email"
+                  className="w-full bg-white border border-slate-300 text-slate-900 text-sm rounded-xl pl-9 pr-4 py-2.5 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors"
                 />
               </div>
             </div>
 
-            {/* Password */}
             <div>
-              <label className="block text-xs font-bold text-stone-400 mb-1.5">
-                Password / Nywila
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  placeholder="••••••••••"
-                  className="w-full bg-stone-800 border border-stone-600 text-white text-sm rounded-xl pl-9 pr-10 py-2.5 placeholder-stone-500 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/50 transition-colors"
+                  placeholder="Enter password"
+                  className="w-full bg-white border border-slate-300 text-slate-900 text-sm rounded-xl pl-9 pr-10 py-2.5 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -233,47 +219,46 @@ function AdminLoginView({ onLoginSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-extrabold text-white bg-[#F05A22] hover:bg-[#D8450E] disabled:opacity-60 transition-colors cursor-pointer shadow-lg shadow-orange-900/30 mt-2"
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-60 transition-colors cursor-pointer mt-2"
             >
               {loading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Log In / Ingia</span>
+                  <span>Sign In</span>
                 </>
               )}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-stone-600 text-xs mt-5">
-          Biashara Loans Admin System · Secured Access
-        </p>
+        <div className="text-center mt-5">
+          <button
+            type="button"
+            onClick={onBackToSite}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Biashara Loans</span>
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── KPI Card ──────────────────────────────────────────────────────────────────
-function KpiCard({ icon: Icon, label, labelSw, value, sub, color = 'orange' }) {
-  const colorMap = {
-    orange: 'bg-orange-100 text-[#F05A22]',
-    green: 'bg-green-100 text-green-600',
-    blue: 'bg-blue-100 text-blue-600',
-    purple: 'bg-purple-100 text-purple-600',
-    amber: 'bg-amber-100 text-amber-600',
-  };
+// ─── KPI Card (Restrained Monochrome Style) ───────────────────────────────────
+function KpiCard({ icon: Icon, label, value, sub }) {
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-5 flex items-start gap-4 shadow-xs hover:shadow-md transition-shadow">
-      <div className={`p-2.5 rounded-xl ${colorMap[color]}`}>
+    <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-start gap-4">
+      <div className="p-2.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
         <Icon className="w-5 h-5" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-stone-500 font-medium leading-tight">{label}</p>
-        <p className="text-xs text-stone-400 italic leading-tight">/ {labelSw}</p>
-        <p className="text-xl font-extrabold text-stone-900 mt-1 leading-none">{value}</p>
-        {sub && <p className="text-xs text-stone-400 mt-0.5">{sub}</p>}
+        <p className="text-xs font-medium text-slate-500">{label}</p>
+        <p className="text-xl font-bold text-slate-900 mt-1 leading-none">{value}</p>
+        {sub && <p className="text-xs text-slate-400 mt-1.5">{sub}</p>}
       </div>
     </div>
   );
@@ -292,7 +277,6 @@ function AnalyticsTab({ applicants }) {
       0
     );
 
-    // Sector breakdown
     const sectorMap = {};
     applicants.forEach((a) => {
       sectorMap[a.category] = (sectorMap[a.category] || 0) + 1;
@@ -311,81 +295,65 @@ function AnalyticsTab({ applicants }) {
         <KpiCard
           icon={Users}
           label="Total Applications"
-          labelSw="Jumla ya Maombi"
           value={fmtNum(stats.total)}
-          sub="All time / Tangu mwanzo"
-          color="blue"
+          sub="All submitted applications"
         />
         <KpiCard
           icon={Banknote}
           label="Capital Disbursed"
-          labelSw="Mtaji Uliotolewa"
           value={fmt(stats.totalCapital)}
-          sub={`${stats.disbursed} loans funded / mikopo`}
-          color="green"
+          sub={`${stats.disbursed} funded loans`}
         />
         <KpiCard
           icon={TrendingUp}
           label="Approval Rate"
-          labelSw="Kiwango cha Kibali"
           value={`${stats.approvalRate}%`}
-          sub="Approved + Disbursed / Zilizopitishwa"
-          color="orange"
+          sub="Approved and disbursed"
         />
         <KpiCard
           icon={Activity}
           label="Active Borrowers"
-          labelSw="Wakopaji Wanaoendelea"
           value={fmtNum(stats.disbursed)}
-          sub="Currently funded / Zinaendelea"
-          color="purple"
+          sub="Currently active accounts"
         />
         <KpiCard
           icon={BarChart3}
           label="Projected Interest"
-          labelSw="Faida Inayotarajiwa"
           value={fmt(stats.projectedInterest)}
-          sub="At 5% / month flat rate"
-          color="amber"
+          sub="Calculated at current monthly rate"
         />
         <KpiCard
           icon={PieChart}
           label="Sectors Covered"
-          labelSw="Sekta Zinazofadhiliwa"
           value={fmtNum(sectorEntries.length)}
-          sub="Business sectors / Sekta za biashara"
-          color="blue"
+          sub="Active business categories"
         />
       </div>
 
-      {/* Sector Breakdown */}
-      <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-sm font-extrabold text-stone-800 mb-1">Sector Distribution</h3>
-        <p className="text-xs text-stone-400 mb-5">/ Mgawanyo wa Sekta za Biashara</p>
+      {/* Sector Distribution */}
+      <div className="bg-white border border-slate-200 rounded-xl p-6">
+        <div className="mb-5">
+          <h3 className="text-sm font-bold text-slate-900">Sector Distribution</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Breakdown of loan applications by business category</p>
+        </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {sectorEntries.length === 0 && (
-            <p className="text-xs text-stone-400 text-center py-4">No applications yet / Hakuna maombi bado</p>
+            <p className="text-xs text-slate-400 text-center py-4">No applications recorded yet.</p>
           )}
           {sectorEntries.map(([sector, count]) => {
-            const Icon = SECTOR_ICONS[sector] || Store;
             const pct = Math.round((count / maxCount) * 100);
             return (
-              <div key={sector} className="flex items-center gap-3">
-                <div className="p-1.5 rounded-lg bg-orange-50">
-                  <Icon className="w-3.5 h-3.5 text-[#F05A22]" />
+              <div key={sector} className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-700 truncate">{sector}</span>
+                  <span className="font-semibold text-slate-900 ml-2 shrink-0">{count}</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-stone-700 truncate">{sector}</span>
-                    <span className="text-xs font-bold text-stone-500 ml-2 shrink-0">{count}</span>
-                  </div>
-                  <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#F05A22] rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-slate-800 rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
               </div>
             );
@@ -394,15 +362,13 @@ function AnalyticsTab({ applicants }) {
       </div>
 
       {/* Status Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {['Pending', 'Approved', 'Disbursed', 'Rejected'].map((status) => {
           const count = applicants.filter((a) => a.status === status).length;
           return (
-            <div key={status} className="bg-white border border-stone-200 rounded-xl p-4 text-center shadow-xs">
-              <span className={`inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full mb-2 ${STATUS_COLOR[status]}`}>
-                {status}
-              </span>
-              <p className="text-2xl font-extrabold text-stone-900">{count}</p>
+            <div key={status} className="bg-white border border-slate-200 rounded-xl p-4">
+              <p className="text-xs font-medium text-slate-500">{status}</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{count}</p>
             </div>
           );
         })}
@@ -411,83 +377,78 @@ function AnalyticsTab({ applicants }) {
   );
 }
 
-// ─── Applicant Detail Modal ────────────────────────────────────────────────────
+// ─── Applicant Detail Modal ───────────────────────────────────────────────────
 function ApplicantModal({ applicant, onClose, onStatusChange }) {
   if (!applicant) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div>
-            <h3 className="font-extrabold text-stone-900">{applicant.borrowerName}</h3>
-            <p className="text-xs text-stone-500">{applicant.loanId}</p>
+            <h3 className="font-bold text-slate-900">{applicant.borrowerName}</h3>
+            <p className="text-xs text-slate-500 font-mono">{applicant.loanId}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-5 space-y-5">
-          {/* Status Badge */}
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-extrabold uppercase px-3 py-1 rounded-full ${STATUS_COLOR[applicant.status] || ''}`}>
+          <div className="flex items-center justify-between">
+            <span className={`text-[11px] font-semibold uppercase px-2.5 py-1 rounded-md ${STATUS_BADGE[applicant.status] || ''}`}>
               {applicant.status}
             </span>
-            <span className="text-xs text-stone-400">
-              {new Date(applicant.createdAt).toLocaleDateString('en-TZ', { day: 'numeric', month: 'long', year: 'numeric' })}
+            <span className="text-xs text-slate-400">
+              {new Date(applicant.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
             </span>
           </div>
 
-          {/* Two Column Info */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 text-xs border-t border-b border-slate-100 py-4">
             {[
-              ['Phone / Simu', applicant.phone],
-              ['NIDA / Kitambulisho', applicant.nida],
-              ['Category / Sekta', applicant.category],
-              ['Monthly Revenue / Mapato', applicant.monthlyRevenue],
-              ['Loan Amount / Kiasi', fmt(applicant.amount)],
-              ['Duration / Muda', `${applicant.durationMonths} months`],
+              ['Phone Number', applicant.phone],
+              ['National ID (NIDA)', applicant.nida],
+              ['Business Category', applicant.category],
+              ['Monthly Revenue Tier', applicant.monthlyRevenue],
+              ['Requested Amount', fmt(applicant.amount)],
+              ['Repayment Term', `${applicant.durationMonths} months`],
               ['Total Repayment', fmt(applicant.amount * (1 + 0.05 * applicant.durationMonths))],
-              ['Monthly Instalment', fmt((applicant.amount * (1 + 0.05 * applicant.durationMonths)) / applicant.durationMonths)],
+              ['Monthly Installment', fmt((applicant.amount * (1 + 0.05 * applicant.durationMonths)) / applicant.durationMonths)],
             ].map(([label, val]) => (
               <div key={label}>
-                <p className="text-stone-400 font-medium">{label}</p>
-                <p className="text-stone-800 font-bold break-words">{val || '—'}</p>
+                <p className="text-slate-400 font-medium">{label}</p>
+                <p className="text-slate-900 font-semibold mt-0.5 break-words">{val || '—'}</p>
               </div>
             ))}
           </div>
 
-          {/* Quick Actions */}
           {applicant.status === 'Pending' && (
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2.5">
               <button
                 onClick={() => { onStatusChange(applicant.loanId, 'Approved'); onClose(); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Approve / Idhinisha
+                Approve Application
               </button>
               <button
                 onClick={() => { onStatusChange(applicant.loanId, 'Rejected'); onClose(); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-colors cursor-pointer"
               >
                 <XCircle className="w-4 h-4" />
-                Reject / Kataa
+                Reject
               </button>
             </div>
           )}
           {applicant.status === 'Approved' && (
             <button
               onClick={() => { onStatusChange(applicant.loanId, 'Disbursed'); onClose(); }}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-green-600 hover:bg-green-700 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <Banknote className="w-4 h-4" />
-              Mark as Disbursed / Lipa Mkopo
+              Mark as Disbursed
             </button>
           )}
         </div>
@@ -510,7 +471,8 @@ function ApplicantsTab({ applicants, onStatusChange }) {
         !search ||
         a.borrowerName?.toLowerCase().includes(search.toLowerCase()) ||
         a.loanId?.toLowerCase().includes(search.toLowerCase()) ||
-        a.phone?.includes(search);
+        a.phone?.includes(search) ||
+        a.nida?.includes(search);
       const matchesStatus = statusFilter === 'All' || a.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -518,16 +480,15 @@ function ApplicantsTab({ applicants, onStatusChange }) {
 
   return (
     <div className="space-y-4">
-      {/* Filters Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, ID, phone / Tafuta..."
-            className="w-full border border-stone-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30 bg-white"
+            placeholder="Search by name, reference ID, NIDA, or phone..."
+            className="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900 bg-white"
           />
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -535,10 +496,10 @@ function ApplicantsTab({ applicants, onStatusChange }) {
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer border ${
+              className={`px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer border ${
                 statusFilter === s
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
               }`}
             >
               {s}
@@ -547,19 +508,18 @@ function ApplicantsTab({ applicants, onStatusChange }) {
         </div>
       </div>
 
-      {/* Count */}
-      <p className="text-xs text-stone-400 font-medium">
-        Showing {filtered.length} of {applicants.length} applications / maombi
+      <p className="text-xs text-slate-500">
+        Showing {filtered.length} of {applicants.length} applications
       </p>
 
-      {/* Table (desktop) / Cards (mobile) */}
-      <div className="hidden md:block bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-white border border-slate-200 rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-stone-50 border-b border-stone-200">
-                {['Ref ID', 'Borrower / Mkopaji', 'Category / Sekta', 'Revenue Tier', 'Amount', 'Term', 'Status / Hali', 'Date / Tarehe', 'Actions'].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 font-extrabold text-stone-600 uppercase tracking-wide text-[10px] whitespace-nowrap">
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['Reference', 'Applicant', 'Category', 'Salary Tier', 'Amount', 'Term', 'Status', 'Date', 'Actions'].map((h) => (
+                  <th key={h} className="text-left px-4 py-3 font-semibold text-slate-600 uppercase tracking-wider text-[10px] whitespace-nowrap">
                     {h}
                   </th>
                 ))}
@@ -568,49 +528,49 @@ function ApplicantsTab({ applicants, onStatusChange }) {
             <tbody>
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-stone-400 text-sm">
-                    No applications match your filters. / Hakuna maombi yanayolingana.
+                  <td colSpan={9} className="px-4 py-8 text-center text-slate-400 text-sm">
+                    No applications match the selected filters.
                   </td>
                 </tr>
               )}
               {filtered.map((a) => (
-                <tr key={a.loanId} className="border-b border-stone-100 hover:bg-stone-50/70 transition-colors">
-                  <td className="px-4 py-3 font-mono font-bold text-stone-700">{a.loanId}</td>
+                <tr key={a.loanId} className="border-b border-slate-100 hover:bg-slate-50/70 transition-colors">
+                  <td className="px-4 py-3 font-mono font-semibold text-slate-700">{a.loanId}</td>
                   <td className="px-4 py-3">
-                    <p className="font-bold text-stone-800">{a.borrowerName}</p>
-                    <p className="text-stone-400">{a.phone}</p>
+                    <p className="font-semibold text-slate-900">{a.borrowerName}</p>
+                    <p className="text-slate-400">{a.phone}</p>
                   </td>
-                  <td className="px-4 py-3 text-stone-600 max-w-[120px] truncate">{a.category}</td>
-                  <td className="px-4 py-3 text-stone-600 max-w-[110px] truncate">{a.monthlyRevenue}</td>
-                  <td className="px-4 py-3 font-bold text-stone-800 whitespace-nowrap">{fmt(a.amount)}</td>
-                  <td className="px-4 py-3 text-stone-600 whitespace-nowrap">{a.durationMonths}mo</td>
+                  <td className="px-4 py-3 text-slate-600 max-w-[140px] truncate">{a.category}</td>
+                  <td className="px-4 py-3 text-slate-600 max-w-[140px] truncate">{a.monthlyRevenue}</td>
+                  <td className="px-4 py-3 font-semibold text-slate-900 whitespace-nowrap">{fmt(a.amount)}</td>
+                  <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.durationMonths} mo</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${STATUS_COLOR[a.status] || ''}`}>
+                    <span className={`inline-block text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md whitespace-nowrap ${STATUS_BADGE[a.status] || ''}`}>
                       {a.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-stone-400 whitespace-nowrap">
-                    {new Date(a.createdAt).toLocaleDateString('en-TZ', { day: 'numeric', month: 'short' })}
+                  <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
+                    {new Date(a.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setSelectedApplicant(a)}
-                        className="px-2.5 py-1.5 text-[10px] font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-[11px] font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                       >
-                        View
+                        Details
                       </button>
                       {a.status === 'Pending' && (
                         <>
                           <button
                             onClick={() => onStatusChange(a.loanId, 'Approved')}
-                            className="px-2.5 py-1.5 text-[10px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg transition-colors cursor-pointer"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors cursor-pointer"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => onStatusChange(a.loanId, 'Rejected')}
-                            className="px-2.5 py-1.5 text-[10px] font-bold bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors cursor-pointer"
+                            className="px-2.5 py-1 text-[11px] font-medium bg-white hover:bg-slate-100 text-slate-600 border border-slate-300 rounded-lg transition-colors cursor-pointer"
                           >
                             Reject
                           </button>
@@ -619,7 +579,7 @@ function ApplicantsTab({ applicants, onStatusChange }) {
                       {a.status === 'Approved' && (
                         <button
                           onClick={() => onStatusChange(a.loanId, 'Disbursed')}
-                          className="px-2.5 py-1.5 text-[10px] font-bold bg-green-50 hover:bg-green-100 text-green-700 rounded-lg transition-colors cursor-pointer"
+                          className="px-2.5 py-1 text-[11px] font-medium bg-slate-900 hover:bg-slate-800 text-white rounded-lg transition-colors cursor-pointer"
                         >
                           Disburse
                         </button>
@@ -636,48 +596,47 @@ function ApplicantsTab({ applicants, onStatusChange }) {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filtered.length === 0 && (
-          <div className="bg-white border border-stone-200 rounded-2xl p-6 text-center text-stone-400 text-sm">
-            No applications match your filters. / Hakuna maombi yanayolingana.
+          <div className="bg-white border border-slate-200 rounded-xl p-6 text-center text-slate-400 text-sm">
+            No applications match the selected filters.
           </div>
         )}
         {filtered.map((a) => (
-          <div key={a.loanId} className="bg-white border border-stone-200 rounded-xl p-4 shadow-xs">
+          <div key={a.loanId} className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="font-extrabold text-stone-800 text-sm">{a.borrowerName}</p>
-                <p className="text-xs text-stone-400">{a.loanId} · {a.phone}</p>
+                <p className="font-bold text-slate-900 text-sm">{a.borrowerName}</p>
+                <p className="text-xs text-slate-400">{a.loanId} · {a.phone}</p>
               </div>
-              <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${STATUS_COLOR[a.status] || ''}`}>
+              <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md ${STATUS_BADGE[a.status] || ''}`}>
                 {a.status}
               </span>
             </div>
-            <div className="flex justify-between text-xs text-stone-600 mb-3">
-              <span>{fmt(a.amount)}</span>
+            <div className="flex justify-between text-xs text-slate-600 mb-3">
+              <span className="font-semibold text-slate-900">{fmt(a.amount)}</span>
               <span>{a.durationMonths} months</span>
-              <span>{a.category}</span>
+              <span className="truncate max-w-[120px]">{a.category}</span>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => setSelectedApplicant(a)}
-                className="flex-1 py-1.5 text-xs font-bold bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg cursor-pointer"
+                className="flex-1 py-1.5 text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg cursor-pointer"
               >
                 View Details
               </button>
               {a.status === 'Pending' && (
                 <>
-                  <button onClick={() => onStatusChange(a.loanId, 'Approved')} className="flex-1 py-1.5 text-xs font-bold bg-blue-50 text-blue-700 rounded-lg cursor-pointer">Approve</button>
-                  <button onClick={() => onStatusChange(a.loanId, 'Rejected')} className="flex-1 py-1.5 text-xs font-bold bg-red-50 text-red-700 rounded-lg cursor-pointer">Reject</button>
+                  <button onClick={() => onStatusChange(a.loanId, 'Approved')} className="flex-1 py-1.5 text-xs font-medium bg-slate-900 text-white rounded-lg cursor-pointer">Approve</button>
+                  <button onClick={() => onStatusChange(a.loanId, 'Rejected')} className="flex-1 py-1.5 text-xs font-medium bg-white border border-slate-300 text-slate-700 rounded-lg cursor-pointer">Reject</button>
                 </>
               )}
               {a.status === 'Approved' && (
-                <button onClick={() => onStatusChange(a.loanId, 'Disbursed')} className="flex-1 py-1.5 text-xs font-bold bg-green-50 text-green-700 rounded-lg cursor-pointer">Disburse</button>
+                <button onClick={() => onStatusChange(a.loanId, 'Disbursed')} className="flex-1 py-1.5 text-xs font-medium bg-slate-900 text-white rounded-lg cursor-pointer">Disburse</button>
               )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Applicant Detail Modal */}
       {selectedApplicant && (
         <ApplicantModal
           applicant={selectedApplicant}
@@ -689,19 +648,22 @@ function ApplicantsTab({ applicants, onStatusChange }) {
   );
 }
 
-// ─── Loan Rules Settings Tab ───────────────────────────────────────────────────
+// ─── Loan Rules & Eligibility Tab ─────────────────────────────────────────────
 function LoanRulesTab() {
   const [rules, setRules] = useState(() => getStoredLoanRules());
   const [toast, setToast] = useState('');
 
   const handleSave = () => {
     saveStoredLoanRules(rules);
-    setToast('Mipangilio imehifadhiwa! / Settings saved successfully.');
+    setToast('Eligibility brackets and loan settings saved.');
     setTimeout(() => setToast(''), 3500);
   };
 
   const handleReset = () => {
     setRules(DEFAULT_LOAN_RULES);
+    saveStoredLoanRules(DEFAULT_LOAN_RULES);
+    setToast('Settings reset to defaults.');
+    setTimeout(() => setToast(''), 3500);
   };
 
   const updateTier = (tierId, field, rawValue) => {
@@ -720,23 +682,24 @@ function LoanRulesTab() {
 
   return (
     <div className="space-y-6">
-      {/* Toast */}
       {toast && (
-        <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 text-sm font-semibold">
+        <div className="flex items-center gap-2 bg-slate-900 text-white rounded-xl px-4 py-3 text-xs font-medium">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{toast}</span>
         </div>
       )}
 
-      {/* Global Settings */}
-      <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-xs">
-        <h3 className="text-sm font-extrabold text-stone-800 mb-1">Global Loan Parameters</h3>
-        <p className="text-xs text-stone-400 mb-5">/ Vigezo vya Jumla vya Mkopo</p>
+      {/* Global Parameters */}
+      <div className="bg-white border border-slate-200 rounded-xl p-6">
+        <h3 className="text-sm font-bold text-slate-900">Global Loan Parameters</h3>
+        <p className="text-xs text-slate-500 mt-0.5 mb-5">
+          Configure base interest rate, age requirement, and maximum repayment period.
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-bold text-stone-600 mb-1.5">
-              Monthly Interest Rate (%) / Riba ya Kila Mwezi
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Monthly Interest Rate (%)
             </label>
             <input
               type="number"
@@ -744,12 +707,12 @@ function LoanRulesTab() {
               max="30"
               value={rules.interestRateMonthly}
               onChange={(e) => updateGlobal('interestRateMonthly', e.target.value)}
-              className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-900"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-stone-600 mb-1.5">
-              Minimum Age / Umri wa Chini
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Minimum Borrower Age
             </label>
             <input
               type="number"
@@ -757,12 +720,12 @@ function LoanRulesTab() {
               max="65"
               value={rules.minAge}
               onChange={(e) => updateGlobal('minAge', e.target.value)}
-              className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-900"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-stone-600 mb-1.5">
-              Max Tenure (Months) / Muda wa Juu (Miezi)
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Maximum Tenure (Months)
             </label>
             <input
               type="number"
@@ -770,58 +733,66 @@ function LoanRulesTab() {
               max="24"
               value={rules.maxTenureMonths}
               onChange={(e) => updateGlobal('maxTenureMonths', e.target.value)}
-              className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30"
+              className="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-900 focus:outline-none focus:border-slate-900"
             />
           </div>
         </div>
       </div>
 
-      {/* Salary Tier Table */}
-      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xs">
-        <div className="px-6 py-4 border-b border-stone-100">
-          <h3 className="text-sm font-extrabold text-stone-800">Salary Bracket Loan Limits</h3>
-          <p className="text-xs text-stone-400 mt-0.5">/ Mipaka ya Mkopo kwa Kipato cha Kila Kundi</p>
+      {/* Salary Eligibility Brackets */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-200">
+          <h3 className="text-sm font-bold text-slate-900">Salary Eligibility Brackets</h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Define exact minimum and maximum eligible loan amounts for each monthly salary tier.
+          </p>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-stone-50 border-b border-stone-200">
-                {['Tier / Kundi', 'Salary Range / Kipato', 'Min Loan (TZS)', 'Max Loan (TZS)'].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 font-extrabold text-stone-600 uppercase tracking-wide text-[10px]">{h}</th>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['Tier', 'Monthly Salary Range', 'Min Eligible Loan (TZS)', 'Max Eligible Loan (TZS)'].map((h) => (
+                  <th key={h} className="text-left px-5 py-3 font-semibold text-slate-600 uppercase tracking-wider text-[10px]">
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rules.salaryBrackets.map((tier, idx) => (
-                <tr key={tier.id} className="border-b border-stone-100 hover:bg-stone-50/50 transition-colors">
-                  <td className="px-5 py-4">
-                    <span className="inline-block bg-orange-100 text-[#F05A22] text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">
+                <tr key={tier.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <span className="inline-block bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-semibold uppercase px-2.5 py-0.5 rounded-md">
                       Tier {idx + 1}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
-                    <p className="font-semibold text-stone-700">{tier.labelEn}</p>
-                    <p className="text-stone-400 italic">{tier.labelSw}</p>
+                  <td className="px-5 py-3.5">
+                    <input
+                      type="text"
+                      value={tier.labelEn}
+                      onChange={(e) => updateTier(tier.id, 'labelEn', e.target.value)}
+                      className="w-full min-w-[180px] border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:border-slate-900"
+                    />
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-3.5">
                     <input
                       type="number"
                       min="10000"
                       step="10000"
                       value={tier.minLoan}
                       onChange={(e) => updateTier(tier.id, 'minLoan', e.target.value)}
-                      className="w-32 border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-800 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30"
+                      className="w-32 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono focus:outline-none focus:border-slate-900"
                     />
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-3.5">
                     <input
                       type="number"
                       min="10000"
                       step="10000"
                       value={tier.maxLoan}
                       onChange={(e) => updateTier(tier.id, 'maxLoan', e.target.value)}
-                      className="w-36 border border-stone-200 rounded-lg px-2.5 py-1.5 text-xs text-stone-800 focus:outline-none focus:border-[#F05A22] focus:ring-1 focus:ring-[#F05A22]/30"
+                      className="w-36 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 font-mono focus:outline-none focus:border-slate-900"
                     />
                   </td>
                 </tr>
@@ -831,41 +802,40 @@ function LoanRulesTab() {
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-extrabold text-white bg-[#F05A22] hover:bg-[#D8450E] transition-colors shadow-md shadow-orange-500/20 cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer"
         >
           <Save className="w-4 h-4" />
-          Save Settings / Hifadhi Mipangilio
+          Save Settings
         </button>
         <button
           onClick={handleReset}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-stone-700 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
-          Reset Defaults / Rejesha Mwanzo
+          Reset to Defaults
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Super Admin Panel ───────────────────────────────────────────────────
+// ─── Main Super Admin Panel (Organized 3-Bar Navigation Menu) ─────────────────
 export function SuperAdminPanel({ onBackToSite }) {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => sessionStorage.getItem('biashara_admin_session') === 'true'
   );
   const [adminEmail, setAdminEmail] = useState('');
   const [activeTab, setActiveTab] = useState('analytics');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Load & manage applicants (from localStorage + fallback mock data)
   const [applicants, setApplicants] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem('biashara_applications') || '[]');
       if (stored.length > 0) {
-        // Merge stored with mocks so we always have something to show
         const storedIds = new Set(stored.map((a) => a.loanId));
         const uniqueMocks = MOCK_APPLICANTS.filter((m) => !storedIds.has(m.loanId));
         return [...stored, ...uniqueMocks];
@@ -887,8 +857,7 @@ export function SuperAdminPanel({ onBackToSite }) {
 
   const handleStatusChange = (loanId, newStatus) => {
     setApplicants((prev) => {
-      const updated = prev.map((a) => a.loanId === loanId ? { ...a, status: newStatus } : a);
-      // Persist to localStorage
+      const updated = prev.map((a) => (a.loanId === loanId ? { ...a, status: newStatus } : a));
       try {
         const persisted = updated.filter((a) => !MOCK_APPLICANTS.find((m) => m.loanId === a.loanId));
         localStorage.setItem('biashara_applications', JSON.stringify(persisted));
@@ -898,124 +867,187 @@ export function SuperAdminPanel({ onBackToSite }) {
   };
 
   if (!isAuthenticated) {
-    return <AdminLoginView onLoginSuccess={handleLogin} />;
+    return <AdminLoginView onLoginSuccess={handleLogin} onBackToSite={onBackToSite} />;
   }
 
-  const TABS = [
-    { id: 'analytics', label: 'Analytics', labelSw: 'Takwimu', icon: BarChart3 },
-    { id: 'applicants', label: 'Applicants', labelSw: 'Waombaji', icon: Users },
-    { id: 'settings', label: 'Loan Rules', labelSw: 'Mipangilio', icon: Settings },
+  const NAV_ITEMS = [
+    { id: 'analytics', label: 'Analytics', description: 'Portfolio & sector overview', icon: BarChart3 },
+    { id: 'applicants', label: 'Applicants', description: 'Review & approve loans', icon: Users },
+    { id: 'settings', label: 'Eligibility & Limits', description: 'Salary brackets & rules', icon: Settings },
   ];
 
+  const currentNav = NAV_ITEMS.find((t) => t.id === activeTab);
+
+  const selectTab = (tabId) => {
+    setActiveTab(tabId);
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col">
-      {/* Top Admin Header Bar */}
-      <header className="sticky top-0 z-40 bg-stone-900 text-white border-b border-stone-700 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            {/* Left: Logo + Title */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onBackToSite}
-                className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-stone-700 transition-colors cursor-pointer"
-                title="Back to Biashara Loans / Rudi Tovutini"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div className="h-5 w-px bg-stone-700" />
-              <BiasharaLogo variant="white" />
-              <span className="hidden sm:inline text-xs font-bold text-stone-400 border border-stone-600 px-2 py-0.5 rounded-lg">
-                Admin Panel
-              </span>
-            </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Top Bar with 3-Bar Hamburger Menu */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 h-14 px-4 sm:px-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {/* 3-Bar Menu Toggle Button (Desktop & Mobile) */}
+          <button
+            type="button"
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setMobileMenuOpen(!mobileMenuOpen);
+              } else {
+                setSidebarOpen(!sidebarOpen);
+              }
+            }}
+            className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Toggle navigation menu"
+            title="Toggle navigation menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
 
-            {/* Right: Tab Nav (desktop) + User + Logout */}
-            <div className="flex items-center gap-2">
-              <div className="hidden md:flex items-center bg-stone-800 border border-stone-700 rounded-xl p-0.5 gap-0.5">
-                {TABS.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                        activeTab === tab.id
-                          ? 'bg-[#F05A22] text-white shadow-sm'
-                          : 'text-stone-400 hover:text-white hover:bg-stone-700'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <BiasharaLogo />
+          <span className="hidden sm:inline-block text-xs font-semibold text-slate-500 border-l border-slate-200 pl-3">
+            Admin Console
+          </span>
+        </div>
 
-              {/* Admin email */}
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-400 border border-stone-700 bg-stone-800 rounded-lg px-2.5 py-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
-                <span className="max-w-[140px] truncate">{adminEmail || ADMIN_EMAIL}</span>
-              </div>
-
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-stone-400 hover:text-white hover:bg-stone-700 border border-stone-700 transition-colors cursor-pointer"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5">
+            <ShieldCheck className="w-3.5 h-3.5 text-slate-700" />
+            <span className="max-w-[180px] truncate">{adminEmail || ADMIN_EMAIL}</span>
           </div>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
         </div>
       </header>
 
-      {/* Mobile Tab Nav */}
-      <div className="md:hidden bg-white border-b border-stone-200 sticky top-14 z-30">
-        <div className="flex">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            return (
+      <div className="flex-1 flex relative">
+        {/* Desktop Sidebar (controlled by 3-bar menu) */}
+        {sidebarOpen && (
+          <aside className="hidden md:flex w-64 shrink-0 flex-col justify-between bg-white border-r border-slate-200 p-4">
+            <nav className="space-y-1">
+              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Navigation
+              </p>
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => selectTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                      isActive
+                        ? 'bg-slate-900 text-white'
+                        : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold leading-tight">{item.label}</p>
+                      <p className={`text-[11px] leading-tight mt-0.5 truncate ${isActive ? 'text-slate-300' : 'text-slate-400'}`}>
+                        {item.description}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="pt-4 border-t border-slate-200 space-y-1">
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex flex-col items-center gap-0.5 py-3 text-[10px] font-extrabold transition-colors cursor-pointer ${
-                  activeTab === tab.id
-                    ? 'text-[#F05A22] border-b-2 border-[#F05A22]'
-                    : 'text-stone-500 hover:text-stone-800'
-                }`}
+                type="button"
+                onClick={onBackToSite}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
+                <ArrowLeft className="w-4 h-4" />
+                <span>Back to Public Site</span>
               </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Page Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Page Title */}
-        <div className="mb-6">
-          <h1 className="text-xl font-extrabold text-stone-900">
-            {TABS.find((t) => t.id === activeTab)?.label}
-          </h1>
-          <p className="text-sm text-stone-400">
-            / {TABS.find((t) => t.id === activeTab)?.labelSw} — Biashara Loans Super Admin
-          </p>
-        </div>
-
-        {activeTab === 'analytics' && <AnalyticsTab applicants={applicants} />}
-        {activeTab === 'applicants' && (
-          <ApplicantsTab applicants={applicants} onStatusChange={handleStatusChange} />
+            </div>
+          </aside>
         )}
-        {activeTab === 'settings' && <LoanRulesTab />}
-      </main>
 
-      {/* Admin Footer */}
-      <footer className="border-t border-stone-200 bg-white py-3 px-6 text-center text-xs text-stone-400">
-        Biashara Loans Admin System · Secured · {new Date().getFullYear()}
-      </footer>
+        {/* Mobile Slide-Out Drawer (controlled by 3-bar menu) */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden flex">
+            <div
+              className="fixed inset-0 bg-slate-950/40"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <aside className="relative z-10 w-64 max-w-[80vw] bg-white h-full border-r border-slate-200 p-4 flex flex-col justify-between shadow-xl">
+              <div>
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    Admin Menu
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <nav className="space-y-1">
+                  {NAV_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => selectTab(item.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                          isActive
+                            ? 'bg-slate-900 text-white'
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span className="text-xs font-semibold">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={onBackToSite}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Back to Public Site</span>
+                </button>
+              </div>
+            </aside>
+          </div>
+        )}
+
+        {/* Main Workspace */}
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full">
+          <div className="mb-6">
+            <h1 className="text-xl font-bold text-slate-900">{currentNav?.label}</h1>
+            <p className="text-xs text-slate-500 mt-0.5">{currentNav?.description}</p>
+          </div>
+
+          {activeTab === 'analytics' && <AnalyticsTab applicants={applicants} />}
+          {activeTab === 'applicants' && (
+            <ApplicantsTab applicants={applicants} onStatusChange={handleStatusChange} />
+          )}
+          {activeTab === 'settings' && <LoanRulesTab />}
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,24 +1,14 @@
 import React from 'react';
 import { BiasharaHero } from './BiasharaHero';
 import { BiasharaFeatures } from './BiasharaFeatures';
-import { BiasharaCalculator } from './BiasharaCalculator';
 import { BiasharaHowItWorks } from './BiasharaHowItWorks';
-import { ArrowRight, Store, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Store } from 'lucide-react';
 
 export function BiasharaHomePage({
   onNavigateToApply,
   onNavigatePage,
   onNavigateToHaloPesa,
-  onApplyWithParams
 }) {
-  const handleApplyWithAmount = ({ amount, durationMonths, salaryRange }) => {
-    if (onApplyWithParams) {
-      onApplyWithParams({ amount, durationMonths, salaryRange });
-    } else {
-      onNavigateToApply();
-    }
-  };
-
   return (
     <div className="space-y-12 pb-16">
       {/* 1. Hero Section (Includes the single authentic African photo mosaic) */}
@@ -31,33 +21,7 @@ export function BiasharaHomePage({
       {/* 2. Why Choose Us & Trust Stats */}
       <BiasharaFeatures />
 
-      {/* 3. Interactive Loan Calculator (With Salary Bracket constraints) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-[#F05A22]">
-              Repayment & Salary Tiers / Kikokotoo na Mishahara
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-0.5">
-              Calculate Loan by Monthly Income
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
-              Eligible borrowing brackets dynamically scale with your monthly revenue.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigatePage('calculator')}
-            className="text-xs sm:text-sm font-bold text-[#F05A22] hover:text-[#D8450E] flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Open Dedicated Calculator / Fungua Kikokotoo</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-        <BiasharaCalculator onApplyWithAmount={handleApplyWithAmount} />
-      </div>
-
-      {/* 4. Supported Sectors Showcase Link Banner */}
+      {/* 3. Supported Sectors Showcase Link Banner */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 rounded-3xl p-6 sm:p-10 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-1.5 text-center sm:text-left">

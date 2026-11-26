@@ -58,15 +58,6 @@ export function BiasharaFooter({ onNavigatePage, onNavigateToHaloPesa, onNavigat
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigatePage('calculator')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Loan Calculator / Kikokotoo cha Mkopo
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => onNavigatePage('sectors')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >

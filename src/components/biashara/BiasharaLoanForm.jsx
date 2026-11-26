@@ -67,36 +67,41 @@ export function BiasharaLoanForm({
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [validationError, setValidationError] = useState('');
 
-  // Form State - Step 1: Personal Information
+  // Form State - Step 1: Personal Information (No autofill defaults)
   const [fullname, setFullname] = useState(userName || '');
   const [nationalId, setNationalId] = useState('');
-  const [phone, setPhone] = useState(userPhone || '0622 145 890');
-  const [age, setAge] = useState('32');
-  const [gender, setGender] = useState('Female');
-  const [maritalStatus, setMaritalStatus] = useState('Married');
+  const [phone, setPhone] = useState(userPhone || '');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState('');
 
-  // Form State - Step 2: Business Information
-  const [bizCategory, setBizCategory] = useState(initialParams.businessCategory || 'Retail & Small Shops');
-  const [bizLocation, setBizLocation] = useState('Dar es Salaam, Kariakoo');
-  const [monthlyRevenue, setMonthlyRevenue] = useState(initialParams.salaryRange || '1000001:2500000');
-  const [bizAge, setBizAge] = useState('1-3 Years');
+  // Form State - Step 2: Business Information (No autofill defaults)
+  const [bizCategory, setBizCategory] = useState(initialParams.businessCategory || '');
+  const [bizLocation, setBizLocation] = useState('');
+  const [monthlyRevenue, setMonthlyRevenue] = useState(initialParams.salaryRange || '');
+  const [bizAge, setBizAge] = useState('');
 
   // Find active salary bracket based on selected monthly revenue
   const activeBracket = useMemo(() => {
+    if (!monthlyRevenue) return null;
     return (
       loanRules.salaryBrackets.find((b) => b.range === monthlyRevenue) ||
-      loanRules.salaryBrackets[1] ||
       loanRules.salaryBrackets[0]
     );
   }, [loanRules, monthlyRevenue]);
 
+  // Fallback bounds before a salary range is chosen
+  const bracketMin = activeBracket ? activeBracket.minLoan : 50000;
+  const bracketMax = activeBracket ? activeBracket.maxLoan : 5000000;
+
   // Form State - Step 3: Loan Request & Terms (Bounded by Active Salary Bracket)
-  const [amount, setAmount] = useState(initialParams.amount || 500000);
+  const [amount, setAmount] = useState(initialParams.amount || 50000);
   const [durationMonths, setDurationMonths] = useState(initialParams.durationMonths || 2);
-  const [loanPurpose, setLoanPurpose] = useState('Stock Purchase / Kuongeza Bidhaa');
+  const [loanPurpose, setLoanPurpose] = useState('');
 
   // Ensure amount is clamped within salary bracket
   useEffect(() => {
+    if (!activeBracket) return;
     if (amount > activeBracket.maxLoan) {
       setAmount(activeBracket.maxLoan);
     } else if (amount < activeBracket.minLoan) {
@@ -143,6 +148,18 @@ export function BiasharaLoanForm({
       setValidationError('Please enter your HaloPesa phone number / Tafadhali jaza namba ya HaloPesa.');
       return;
     }
+    if (!age || Number(age) < (loanRules.minAge || 18)) {
+      setValidationError(`Minimum eligible age is ${loanRules.minAge || 18} years / Umri wa chini ni miaka ${loanRules.minAge || 18}.`);
+      return;
+    }
+    if (!gender) {
+      setValidationError('Please select your gender / Tafadhali chagua jinsia yako.');
+      return;
+    }
+    if (!maritalStatus) {
+      setValidationError('Please select your marital status / Tafadhali chagua hali ya ndoa.');
+      return;
+    }
     setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -150,8 +167,20 @@ export function BiasharaLoanForm({
   const handleNextFromStep2 = (e) => {
     e.preventDefault();
     setValidationError('');
+    if (!bizCategory) {
+      setValidationError('Please select your business category / Tafadhali chagua aina ya biashara.');
+      return;
+    }
+    if (!monthlyRevenue || !activeBracket) {
+      setValidationError('Please select your monthly salary or revenue range to see your eligible loan / Tafadhali chagua kiwango cha mshahara au mauzo.');
+      return;
+    }
     if (!bizLocation.trim()) {
       setValidationError('Please enter your business location / Tafadhali jaza eneo la biashara yako.');
+      return;
+    }
+    if (!bizAge) {
+      setValidationError('Please select how long your business has been operating / Tafadhali chagua muda wa biashara.');
       return;
     }
     setCurrentStep(3);
@@ -161,6 +190,10 @@ export function BiasharaLoanForm({
   const handleNextFromStep3 = (e) => {
     e.preventDefault();
     setValidationError('');
+    if (!loanPurpose) {
+      setValidationError('Please select the purpose of the loan / Tafadhali chagua sababu ya mkopo.');
+      return;
+    }
     setCurrentStep(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -201,7 +234,7 @@ export function BiasharaLoanForm({
         maritalStatus,
         category: bizCategory,
         location: bizLocation,
-        monthlyRevenue: activeBracket.labelEn,
+        monthlyRevenue: activeBracket ? activeBracket.labelEn : 'Not specified',
         status: 'Disbursed',
         createdAt: new Date().toISOString(),
         disbursedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -378,10 +411,12 @@ export function BiasharaLoanForm({
                       </label>
                       <input
                         type="text"
+                        name="name"
+                        autoComplete="name"
                         required
                         value={fullname}
                         onChange={(e) => setFullname(e.target.value)}
-                        placeholder="e.g. Juma Rashid Bakari / Jina lako kamili"
+                        placeholder="Enter your full name / Jina lako kamili"
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
                       />
                     </div>
@@ -393,10 +428,12 @@ export function BiasharaLoanForm({
                       </label>
                       <input
                         type="text"
+                        name="nationalId"
+                        autoComplete="off"
                         required
                         value={nationalId}
                         onChange={(e) => setNationalId(e.target.value)}
-                        placeholder="e.g. 19901234-12345-00001-22"
+                        placeholder="Enter NIDA number / Namba ya NIDA"
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all font-mono"
                       />
                     </div>
@@ -408,10 +445,12 @@ export function BiasharaLoanForm({
                       </label>
                       <input
                         type="tel"
+                        name="tel"
+                        autoComplete="tel"
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="e.g. 0622 123 456"
+                        placeholder="0622 XXX XXX"
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
                       />
                     </div>
@@ -419,15 +458,18 @@ export function BiasharaLoanForm({
                     {/* Age */}
                     <div>
                       <label className="block text-xs font-bold text-stone-700 mb-1">
-                        Age (Years) / Umri (Miaka 18+) *
+                        Age (Years) / Umri (Miaka {loanRules.minAge || 18}+) *
                       </label>
                       <input
                         type="number"
+                        name="age"
+                        autoComplete="off"
                         required
-                        min="18"
+                        min={loanRules.minAge || 18}
                         max="85"
                         value={age}
                         onChange={(e) => setAge(e.target.value)}
+                        placeholder="Enter your age / Umri wako"
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white transition-all"
                       />
                     </div>
@@ -438,10 +480,12 @@ export function BiasharaLoanForm({
                         Gender / Jinsia *
                       </label>
                       <select
+                        required
                         value={gender}
                         onChange={(e) => setGender(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
+                        <option value="" disabled>Select gender / Chagua jinsia</option>
                         <option value="Female">Female / Mwanamke</option>
                         <option value="Male">Male / Mwanaume</option>
                       </select>
@@ -453,10 +497,12 @@ export function BiasharaLoanForm({
                         Marital Status / Hali ya Ndoa *
                       </label>
                       <select
+                        required
                         value={maritalStatus}
                         onChange={(e) => setMaritalStatus(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
+                        <option value="" disabled>Select marital status / Chagua hali ya ndoa</option>
                         <option value="Single">Single / Hujafunga Ndoa</option>
                         <option value="Married">Married / Umeoa au Umeolewa</option>
                         <option value="Divorced">Divorced / Umeachika</option>
@@ -506,10 +552,12 @@ export function BiasharaLoanForm({
                         Business Category / Aina ya Biashara *
                       </label>
                       <select
+                        required
                         value={bizCategory}
                         onChange={(e) => setBizCategory(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
+                        <option value="" disabled>Select business category / Chagua biashara</option>
                         <option value="Retail & Small Shops">Retail & Small Shops / Maduka & Biashara Ndogondogo</option>
                         <option value="Agriculture & Farming">Agriculture & Farming / Kilimo & Ufugaji</option>
                         <option value="Transport & Bodaboda">Transport & Bodaboda / Usafiri & Bodaboda</option>
@@ -526,13 +574,15 @@ export function BiasharaLoanForm({
                         Monthly Revenue or Salary / Mauzo au Mshahara *
                       </label>
                       <select
+                        required
                         value={monthlyRevenue}
                         onChange={(e) => setMonthlyRevenue(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
+                        <option value="" disabled>Select salary or revenue range / Chagua kipato</option>
                         {loanRules.salaryBrackets.map((b) => (
                           <option key={b.id} value={b.range}>
-                            {b.labelEn} (Max: TZS {b.maxLoan.toLocaleString()})
+                            {b.labelEn}
                           </option>
                         ))}
                       </select>
@@ -545,10 +595,12 @@ export function BiasharaLoanForm({
                       </label>
                       <input
                         type="text"
+                        name="street-address"
+                        autoComplete="street-address"
                         required
                         value={bizLocation}
                         onChange={(e) => setBizLocation(e.target.value)}
-                        placeholder="e.g. Dar es Salaam, Kariakoo / Mkoa na Eneo"
+                        placeholder="Enter region & area / Mkoa na Eneo"
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] focus:ring-2 focus:ring-[#F05A22]/20 bg-white transition-all"
                       />
                     </div>
@@ -559,10 +611,12 @@ export function BiasharaLoanForm({
                         Operating Period / Muda wa Biashara *
                       </label>
                       <select
+                        required
                         value={bizAge}
                         onChange={(e) => setBizAge(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                       >
+                        <option value="" disabled>Select operating period / Chagua muda</option>
                         <option value="Under 6 Months">Under 6 Months / Chini ya miezi 6</option>
                         <option value="6-12 Months">6 - 12 Months / Miezi 6 hadi 12</option>
                         <option value="1-3 Years">1 - 3 Years / Miaka 1 hadi 3</option>
@@ -571,13 +625,26 @@ export function BiasharaLoanForm({
                     </div>
                   </div>
 
-                  {/* Active Salary Tier Callout */}
-                  <div className="p-3 bg-orange-50/80 border border-orange-200 rounded-xl flex items-center justify-between text-xs text-stone-800">
-                    <span className="font-semibold">Eligible Loan Limit for this Salary Tier:</span>
-                    <strong className="text-[#F05A22] font-mono text-sm">
-                      Up to TZS {activeBracket.maxLoan.toLocaleString()}
-                    </strong>
-                  </div>
+                  {/* Active Salary Tier Eligibility Callout */}
+                  {activeBracket ? (
+                    <div className="p-4 bg-orange-50/90 border border-orange-200 rounded-xl space-y-1.5 text-xs text-stone-800">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span className="font-bold text-stone-900">
+                          Your Eligible Loan Bracket / Mkopo Unaostahili:
+                        </span>
+                        <strong className="text-[#F05A22] font-mono text-sm">
+                          TZS {activeBracket.minLoan.toLocaleString()} – TZS {activeBracket.maxLoan.toLocaleString()}
+                        </strong>
+                      </div>
+                      <p className="text-[11px] text-stone-600">
+                        {activeBracket.descriptionEn} / {activeBracket.descriptionSw}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-xl text-xs text-stone-600">
+                      Select your monthly salary or revenue range above to view the exact loan amount you are eligible for. / Chagua kipato chako cha mwezi kuona kiwango cha mkopo unachostahili.
+                    </div>
+                  )}
                 </div>
 
                 {/* Navigation Buttons */}
@@ -617,7 +684,7 @@ export function BiasharaLoanForm({
                         Step 3: Loan Request & Terms / Kiasi na Masharti ya Mkopo
                       </h2>
                       <p className="text-[11px] text-stone-500 mt-0.5">
-                        Choose your required capital up to your salary limit of TZS {activeBracket.maxLoan.toLocaleString()}
+                        Eligible loan range for your salary bracket: TZS {bracketMin.toLocaleString()} – TZS {bracketMax.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -635,8 +702,8 @@ export function BiasharaLoanForm({
 
                     <input
                       type="range"
-                      min={activeBracket.minLoan}
-                      max={activeBracket.maxLoan}
+                      min={bracketMin}
+                      max={bracketMax}
                       step="50000"
                       value={amount}
                       onChange={(e) => setAmount(Number(e.target.value))}
@@ -644,8 +711,8 @@ export function BiasharaLoanForm({
                     />
 
                     <div className="flex justify-between text-[11px] text-stone-400 mt-1 font-mono">
-                      <span>Min: TZS {activeBracket.minLoan.toLocaleString()}</span>
-                      <span>Max: TZS {activeBracket.maxLoan.toLocaleString()}</span>
+                      <span>Min: TZS {bracketMin.toLocaleString()}</span>
+                      <span>Max: TZS {bracketMax.toLocaleString()}</span>
                     </div>
                   </div>
 
@@ -684,10 +751,12 @@ export function BiasharaLoanForm({
                       Loan Purpose / Sababu ya Mkopo:
                     </label>
                     <select
+                      required
                       value={loanPurpose}
                       onChange={(e) => setLoanPurpose(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-stone-300 text-stone-900 text-sm focus:outline-none focus:border-[#F05A22] bg-white cursor-pointer"
                     >
+                      <option value="" disabled>Select loan purpose / Chagua sababu ya mkopo</option>
                       <option value="Stock Purchase / Kuongeza Bidhaa">Stock Purchase / Kuongeza Bidhaa za Duka</option>
                       <option value="Business Equipment / Vifaa vya Kazi">Business Equipment / Kununua Vifaa vya Kazi</option>
                       <option value="Business Expansion / Kupandisha Mtaji">Business Expansion / Kupandisha Mtaji</option>

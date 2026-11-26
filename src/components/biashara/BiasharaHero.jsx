@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Calculator, CheckCircle2, Zap, Wallet, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Zap, Wallet, ArrowUpRight } from 'lucide-react';
 
 export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHaloPesa }) {
   return (
@@ -45,15 +45,6 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
               >
                 <span>Apply for Loan / Omba Mkopo Sasa</span>
                 <ArrowRight className="w-5 h-5 stroke-[2.2]" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigatePage('calculator')}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl font-bold text-stone-800 text-sm sm:text-base bg-white hover:bg-stone-50 border border-stone-200 shadow-xs transition-all cursor-pointer"
-              >
-                <Calculator className="w-4 h-4 text-[#F05A22]" />
-                <span>Loan Calculator / Kikokotoo</span>
               </button>
 
               <button
