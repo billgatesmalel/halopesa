@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, CheckCircle2, Zap, Wallet, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Zap, Wallet, ArrowUpRight, Activity } from 'lucide-react';
 
 export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHaloPesa }) {
   return (
@@ -55,6 +55,15 @@ export function BiasharaHero({ onNavigateToApply, onNavigatePage, onNavigateToHa
               >
                 <Wallet className="w-4 h-4 text-[#F05A22]" />
                 <span>HaloPesa Wallet / Pochi</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onNavigatePage('track')}
+                className="inline-flex sm:hidden items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-stone-800 text-xs bg-white hover:bg-stone-50 border border-stone-200 shadow-xs transition-all cursor-pointer"
+              >
+                <Activity className="w-4 h-4 text-[#F05A22]" />
+                <span>Track Loan / Fuatilia Mkopo</span>
               </button>
             </div>
 

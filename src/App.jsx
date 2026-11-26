@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { translations } from './translations';
-import { BiasharaNavbar } from './components/biashara/BiasharaNavbar';
+import { BiasharaNavbar, BiasharaMobileBottomNav } from './components/biashara/BiasharaNavbar';
 import { BiasharaFooter } from './components/biashara/BiasharaFooter';
 import { BiasharaHomePage } from './components/biashara/BiasharaHomePage';
 import { BiasharaHowItWorksPage } from './components/biashara/pages/BiasharaHowItWorksPage';
@@ -373,7 +373,7 @@ export default function App() {
   // VIEW 3: DYNAMIC MULTI-PAGE BIASHARA LOANS WEBSITE
   // ═════════════════════════════════════════════════════════════════════════
   return (
-    <div className="min-h-screen bg-white text-stone-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen bg-white text-stone-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white pb-16 md:pb-0">
       {/* Sticky Top Navigation with Active Highlight */}
       <BiasharaNavbar
         activePage={activePage}
@@ -442,6 +442,14 @@ export default function App() {
         onNavigatePage={navigateToPage}
         onNavigateToHaloPesa={() => navigateToPage('dashboard')}
         onNavigateToApply={() => navigateToPage('apply')}
+      />
+
+      {/* Mobile Bottom Navigation Bar */}
+      <BiasharaMobileBottomNav
+        activePage={activePage}
+        onNavigatePage={navigateToPage}
+        onNavigateToApply={() => navigateToPage('apply')}
+        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
       />
     </div>
   );
