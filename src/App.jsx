@@ -379,7 +379,7 @@ export default function App() {
         activePage={activePage}
         onNavigatePage={navigateToPage}
         onNavigateToApply={() => navigateToPage('apply')}
-        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+        onNavigateToHaloPesa={() => navigateToPage('onboarding')}
       />
 
       {/* Dynamic Page Router Body */}
@@ -389,7 +389,7 @@ export default function App() {
           <BiasharaHomePage
             onNavigateToApply={() => navigateToPage('apply')}
             onNavigatePage={navigateToPage}
-            onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+            onNavigateToHaloPesa={() => navigateToPage('onboarding')}
             onApplyWithParams={(params) => {
               setLoanApplyParams((prev) => ({ ...prev, ...params }));
               navigateToPage('apply');
@@ -419,7 +419,7 @@ export default function App() {
           <BiasharaTrackPage
             activeLoan={activeLoan}
             onNavigateToApply={() => navigateToPage('apply')}
-            onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+            onNavigateToHaloPesa={() => navigateToPage('onboarding')}
           />
         )}
 
@@ -440,7 +440,7 @@ export default function App() {
       {/* Shared Footer */}
       <BiasharaFooter
         onNavigatePage={navigateToPage}
-        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+        onNavigateToHaloPesa={() => navigateToPage('onboarding')}
         onNavigateToApply={() => navigateToPage('apply')}
       />
 
@@ -449,7 +449,7 @@ export default function App() {
         activePage={activePage}
         onNavigatePage={navigateToPage}
         onNavigateToApply={() => navigateToPage('apply')}
-        onNavigateToHaloPesa={() => navigateToPage('dashboard')}
+        onNavigateToHaloPesa={() => navigateToPage('onboarding')}
       />
     </div>
   );
