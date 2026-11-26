@@ -110,6 +110,7 @@ export function BiasharaLoanForm({
   }, [activeBracket]);
 
   // Submission & Processing States: 'idle' | 'processing' | 'approved'
+  const [assessingEligibility, setAssessingEligibility] = useState(false);
   const [submissionState, setSubmissionState] = useState('idle');
   const [processingStep, setProcessingStep] = useState(1);
   const [approvedLoanData, setApprovedLoanData] = useState(null);
@@ -183,8 +184,12 @@ export function BiasharaLoanForm({
       setValidationError('Please select how long your business has been operating / Tafadhali chagua muda wa biashara.');
       return;
     }
-    setCurrentStep(3);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setAssessingEligibility(true);
+    setTimeout(() => {
+      setAssessingEligibility(false);
+      setCurrentStep(3);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 2200);
   };
 
   const handleNextFromStep3 = (e) => {
@@ -528,7 +533,26 @@ export function BiasharaLoanForm({
             {/* ══════════════════════════════════════════════════════════════════
                 STEP 2: BUSINESS INFORMATION & SALARY RANGE
             ═══════════════════════════════════════════════════════════════════ */}
-            {currentStep === 2 && (
+            {currentStep === 2 && assessingEligibility && (
+              <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-8 sm:p-12 text-center space-y-4 animate-in fade-in duration-200">
+                <div className="w-14 h-14 mx-auto rounded-2xl bg-orange-100 text-[#F05A22] flex items-center justify-center">
+                  <Loader2 className="w-7 h-7 animate-spin" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base sm:text-lg font-extrabold text-stone-900">
+                    Assessing Your Details & Eligibility
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#F05A22] font-semibold">
+                    / Tunatathmini Taarifa Zako Binafsi na za Biashara...
+                  </p>
+                </div>
+                <p className="text-xs text-stone-500 max-w-md mx-auto">
+                  Verifying your personal profile, business category, and monthly revenue to determine your exact loan limit.
+                </p>
+              </div>
+            )}
+
+            {currentStep === 2 && !assessingEligibility && (
               <form onSubmit={handleNextFromStep2} className="space-y-5 animate-in fade-in duration-200">
                 <div className="bg-stone-50/80 border border-stone-200 rounded-2xl p-5 sm:p-6 space-y-4">
                   <div className="flex items-center gap-2.5 pb-3 border-b border-stone-200">
@@ -624,27 +648,6 @@ export function BiasharaLoanForm({
                       </select>
                     </div>
                   </div>
-
-                  {/* Active Salary Tier Eligibility Callout */}
-                  {activeBracket ? (
-                    <div className="p-4 bg-orange-50/90 border border-orange-200 rounded-xl space-y-1.5 text-xs text-stone-800">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                        <span className="font-bold text-stone-900">
-                          Your Eligible Loan Bracket / Mkopo Unaostahili:
-                        </span>
-                        <strong className="text-[#F05A22] font-mono text-sm">
-                          TZS {activeBracket.minLoan.toLocaleString()} – TZS {activeBracket.maxLoan.toLocaleString()}
-                        </strong>
-                      </div>
-                      <p className="text-[11px] text-stone-600">
-                        {activeBracket.descriptionEn} / {activeBracket.descriptionSw}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-xl text-xs text-stone-600">
-                      Select your monthly salary or revenue range above to view the exact loan amount you are eligible for. / Chagua kipato chako cha mwezi kuona kiwango cha mkopo unachostahili.
-                    </div>
-                  )}
                 </div>
 
                 {/* Navigation Buttons */}
